@@ -1,0 +1,177 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function currentUser() { return get(userPath(request.auth.uid)).data; }
+    function active() { return signedIn() && exists(userPath(request.auth.uid)) && currentUser().active == true; }
+    function admin() { return active() && currentUser().role == 'admin'; }
+    function technician() { return active() && currentUser().role == 'technician'; }
+    function text(value, min, max) { return value is string && value.size() >= min && value.size() <= max; }
+    function canReadIncident(data) {
+      return active() && (admin() || (currentUser().role == 'reporter' && data.reporterId == request.auth.uid) ||
+        (technician() && data.assignedTo == request.auth.uid));
+    }
+    function incidentPath(id) { return /databases/$(database)/documents/incidents/$(id); }
+    function participant(id) { return canReadIncident(get(incidentPath(id)).data); }
+    function validUser(data) {
+      return data.keys().hasAll(['name', 'email', 'role', 'active', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['name', 'email', 'role', 'active', 'createdAt', 'updatedAt']) &&
+        text(data.name, 2, 100) && text(data.email, 3, 254) &&
+        data.role in ['reporter', 'technician', 'admin'] && data.active is bool &&
+        data.createdAt is timestamp && data.updatedAt == request.time;
+    }
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || admin());
+      allow create: if signedIn() && request.auth.uid == uid && validUser(request.resource.data) &&
+        request.resource.data.email == request.auth.token.email &&
+        request.resource.data.role == 'reporter' && request.resource.data.active == true &&
+        request.resource.data.createdAt == request.time;
+      allow update: if validUser(request.resource.data) &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.email == resource.data.email &&
+        ((active() && request.auth.uid == uid &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'updatedAt'])) ||
+         (admin() && request.auth.uid != uid &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'role', 'active', 'updatedAt'])));
+      allow delete: if false;
+    }
+    function validCategory(data) {
+      return data.keys().hasAll(['name', 'description', 'active', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['name', 'description', 'active', 'createdAt', 'updatedAt']) &&
+        text(data.name, 2, 80) && text(data.description, 0, 500) && data.active is bool &&
+        data.createdAt is timestamp && data.updatedAt == request.time;
+    }
+    match /categories/{id} {
+      allow read: if active();
+      allow create: if admin() && validCategory(request.resource.data) && request.resource.data.createdAt == request.time;
+      allow update: if admin() && validCategory(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+    }
+    function validIncident(data) {
+      return data.keys().hasAll(['number', 'title', 'description', 'categoryId', 'categoryName', 'location',
+        'priority', 'status', 'reporterId', 'reporterName', 'assignedTo', 'assignedName', 'createdAt',
+        'updatedAt', 'resolvedAt', 'closedAt', 'version', 'lastEventId']) &&
+        data.keys().hasOnly(['number', 'title', 'description', 'categoryId', 'categoryName', 'location',
+        'priority', 'status', 'reporterId', 'reporterName', 'assignedTo', 'assignedName', 'createdAt',
+        'updatedAt', 'resolvedAt', 'closedAt', 'version', 'lastEventId']) &&
+        data.number is string && data.number.matches('CF-[0-9]{4}-[A-Z0-9]{8}') &&
+        text(data.title, 5, 160) && text(data.description, 10, 5000) && text(data.location, 3, 300) &&
+        text(data.categoryId, 1, 100) && text(data.categoryName, 2, 80) &&
+        data.priority in ['BAJA', 'MEDIA', 'ALTA', 'CRITICA'] &&
+        data.status in ['REPORTADA', 'EN_REVISION', 'ASIGNADA', 'EN_ATENCION', 'RESUELTA',
+          'CERRADA', 'RECHAZADA', 'CANCELADA', 'REABIERTA'] &&
+        text(data.reporterId, 1, 128) && text(data.reporterName, 2, 100) &&
+        (data.assignedTo == null || text(data.assignedTo, 1, 128)) &&
+        (data.assignedName == null || text(data.assignedName, 2, 100)) &&
+        data.createdAt is timestamp && data.updatedAt == request.time &&
+        (data.resolvedAt == null || data.resolvedAt is timestamp) &&
+        (data.closedAt == null || data.closedAt is timestamp) &&
+        data.version is int && data.version >= 1 && text(data.lastEventId, 1, 128);
+    }
+    function validCategoryReference(data) {
+      let category = get(/databases/$(database)/documents/categories/$(data.categoryId)).data;
+      return category.active == true && data.categoryName == category.name;
+    }
+    function audit(id, data, previous, kind) {
+      let event = getAfter(/databases/$(database)/documents/incidents/$(id)/events/$(data.lastEventId)).data;
+      return event.actorId == request.auth.uid && event.actorName == currentUser().name &&
+        event.type == kind && event.fromStatus == previous && event.toStatus == data.status &&
+        event.version == data.version && event.createdAt == request.time;
+    }
+    function classification() {
+      let data = request.resource.data;
+      return currentUser().role == 'admin' && resource.data.status in ['REPORTADA', 'EN_REVISION', 'ASIGNADA', 'REABIERTA'] &&
+        data.diff(resource.data).affectedKeys().hasOnly(['categoryId', 'categoryName', 'priority', 'updatedAt', 'version', 'lastEventId']) &&
+        (data.categoryId != resource.data.categoryId || data.categoryName != resource.data.categoryName || data.priority != resource.data.priority) &&
+        validCategoryReference(data);
+    }
+    function assignment() {
+      let data = request.resource.data;
+      return currentUser().role == 'admin' && resource.data.status in ['REPORTADA', 'EN_REVISION', 'ASIGNADA', 'REABIERTA'] &&
+        data.status == 'ASIGNADA' && data.assignedTo is string && get(userPath(data.assignedTo)).data.active == true &&
+        get(userPath(data.assignedTo)).data.role == 'technician' && data.assignedName == get(userPath(data.assignedTo)).data.name &&
+        data.diff(resource.data).affectedKeys().hasOnly(['assignedTo', 'assignedName', 'status', 'updatedAt', 'version', 'lastEventId']);
+    }
+    function allowedTransition() {
+      let before = resource.data.status;
+      let after = request.resource.data.status;
+      return (currentUser().role == 'admin' && (
+        (before == 'REPORTADA' && after in ['EN_REVISION', 'RECHAZADA']) ||
+        (before == 'EN_REVISION' && after == 'RECHAZADA') ||
+        (before == 'REABIERTA' && after == 'EN_REVISION') ||
+        (before == 'RESUELTA' && after in ['CERRADA', 'REABIERTA']) ||
+        (before in ['CERRADA', 'RECHAZADA'] && after == 'REABIERTA'))) ||
+        (currentUser().role == 'technician' && resource.data.assignedTo == request.auth.uid &&
+          ((before == 'ASIGNADA' && after == 'EN_ATENCION') || (before == 'EN_ATENCION' && after == 'RESUELTA'))) ||
+        (currentUser().role == 'reporter' && resource.data.reporterId == request.auth.uid &&
+          ((before in ['REPORTADA', 'EN_REVISION'] && after == 'CANCELADA') ||
+           (before in ['RESUELTA', 'CERRADA', 'RECHAZADA'] && after == 'REABIERTA')));
+    }
+    function transition() {
+      let data = request.resource.data;
+      return allowedTransition() &&
+        data.diff(resource.data).affectedKeys().hasOnly(['status', 'assignedTo', 'assignedName', 'resolvedAt', 'closedAt', 'updatedAt', 'version', 'lastEventId']) &&
+        (data.status == 'REABIERTA' ? (data.assignedTo == null && data.assignedName == null && data.resolvedAt == null && data.closedAt == null) :
+          (data.assignedTo == resource.data.assignedTo && data.assignedName == resource.data.assignedName &&
+           (data.status == 'RESUELTA' ? data.resolvedAt == request.time : data.resolvedAt == resource.data.resolvedAt) &&
+           (data.status == 'CERRADA' ? data.closedAt == request.time : data.closedAt == resource.data.closedAt)));
+    }
+    match /incidents/{id} {
+      allow read: if canReadIncident(resource.data);
+      allow create: if active() && currentUser().role in ['reporter', 'admin'] && validIncident(request.resource.data) &&
+        validCategoryReference(request.resource.data) && request.resource.data.reporterId == request.auth.uid &&
+        request.resource.data.reporterName == currentUser().name && request.resource.data.status == 'REPORTADA' &&
+        request.resource.data.assignedTo == null && request.resource.data.assignedName == null &&
+        request.resource.data.resolvedAt == null && request.resource.data.closedAt == null &&
+        request.resource.data.createdAt == request.time && request.resource.data.version == 1 &&
+        audit(id, request.resource.data, null, 'CREATED');
+      allow update: if active() && validIncident(request.resource.data) &&
+        request.resource.data.version == resource.data.version + 1 &&
+        request.resource.data.lastEventId != resource.data.lastEventId &&
+        ((classification() && audit(id, request.resource.data, resource.data.status, 'CLASSIFIED')) ||
+         (assignment() && audit(id, request.resource.data, resource.data.status, 'ASSIGNED')) ||
+         (transition() && audit(id, request.resource.data, resource.data.status, 'STATUS_CHANGED')));
+      allow delete: if false;
+      match /events/{eventId} {
+        allow read: if participant(id);
+        allow create: if active() &&
+          request.resource.data.keys().hasAll(['actorId', 'actorName', 'type', 'fromStatus', 'toStatus', 'message', 'createdAt', 'version']) &&
+          request.resource.data.keys().hasOnly(['actorId', 'actorName', 'type', 'fromStatus', 'toStatus', 'message', 'createdAt', 'version']) &&
+          request.resource.data.actorId == request.auth.uid && request.resource.data.actorName == currentUser().name &&
+          request.resource.data.type in ['CREATED', 'CLASSIFIED', 'ASSIGNED', 'STATUS_CHANGED'] &&
+          text(request.resource.data.message, 3, 2000) && request.resource.data.createdAt == request.time &&
+          getAfter(incidentPath(id)).data.lastEventId == eventId &&
+          getAfter(incidentPath(id)).data.version == request.resource.data.version &&
+          getAfter(incidentPath(id)).data.status == request.resource.data.toStatus &&
+          ((!exists(incidentPath(id)) && request.resource.data.version == 1 && request.resource.data.fromStatus == null) ||
+           (exists(incidentPath(id)) && request.resource.data.version == get(incidentPath(id)).data.version + 1 &&
+            request.resource.data.fromStatus == get(incidentPath(id)).data.status));
+        allow update, delete: if false;
+      }
+      match /comments/{commentId} {
+        allow read: if participant(id);
+        allow create: if participant(id) &&
+          request.resource.data.keys().hasAll(['authorId', 'authorName', 'text', 'createdAt']) &&
+          request.resource.data.keys().hasOnly(['authorId', 'authorName', 'text', 'createdAt']) &&
+          request.resource.data.authorId == request.auth.uid && request.resource.data.authorName == currentUser().name &&
+          text(request.resource.data.text, 1, 2000) && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
+      match /evidence/{evidenceId} {
+        allow read: if participant(id);
+        allow create: if participant(id) &&
+          request.resource.data.keys().hasAll(['uploaderId', 'uploaderName', 'name', 'path', 'contentType', 'size', 'createdAt']) &&
+          request.resource.data.keys().hasOnly(['uploaderId', 'uploaderName', 'name', 'path', 'contentType', 'size', 'createdAt']) &&
+          request.resource.data.uploaderId == request.auth.uid && request.resource.data.uploaderName == currentUser().name &&
+          text(request.resource.data.name, 1, 180) &&
+          request.resource.data.path == 'incidents/' + id + '/' + request.auth.uid + '/' + evidenceId &&
+          request.resource.data.contentType in ['image/jpeg', 'image/png', 'image/webp'] &&
+          request.resource.data.size is int && request.resource.data.size > 0 && request.resource.data.size <= 5 * 1024 * 1024 &&
+          request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

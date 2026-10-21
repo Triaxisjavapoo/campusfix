@@ -1,0 +1,22 @@
+{
+  "name": "campusfix-firebase-tooling",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Firebase rules, emulators and administration for CampusFix",
+  "type": "module",
+  "engines": { "node": ">=24.12.0" },
+  "scripts": {
+    "emulators": "node scripts/run-firebase-local.mjs start",
+    "demo": "node scripts/run-firebase-local.mjs demo",
+    "test:rules": "node scripts/run-firebase-local.mjs test",
+    "test:integration": "node scripts/run-firebase-local.mjs integration",
+    "seed:emulators": "node scripts/seed-emulators.mjs",
+    "bootstrap:admin": "node scripts/bootstrap-admin.mjs"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.1.0",
+    "firebase-admin": "14.5.0",
+    "firebase-tools": "15.34.1"
+  }
+}
