@@ -1590,9 +1590,14 @@ class IncidentTable extends StatelessWidget {
                         ),
                       ),
                       DataCell(
-                        Text(
-                          x.categoryName,
-                          style: const TextStyle(fontSize: 12),
+                        SizedBox(
+                          width: box.maxWidth * .2,
+                          child: Text(
+                            x.categoryName,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12),
+                          ),
                         ),
                       ),
                       DataCell(PriorityBadge(x.priority)),
