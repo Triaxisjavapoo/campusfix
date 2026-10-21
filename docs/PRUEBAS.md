@@ -121,7 +121,7 @@ Verificaciones ejecutadas el **21 de octubre de 2026**. Los resultados se regist
 | Verificación | Resultado registrado |
 | --- | --- |
 | `dart analyze lib test` | Correcto: `No issues found`. |
-| `flutter test` | **12/12**: diez pruebas de dominio y dos de widgets. Tabla interactiva e indicadores comprobados en 1280 y 768; temas claro y oscuro. |
+| `flutter test` | **22/22**: diez pruebas de dominio, dos de widgets y diez de sesiones. Tabla interactiva e indicadores comprobados en 1280 y 768; temas claro y oscuro. |
 | `npm run test:rules` | **20/20**, Firestore y Storage locales; sin fallos. |
 | `npm run test:integration` | **8/8**, Auth, Firestore y Storage locales; flujo multiusuario, tiempo real y fotografía privada. |
 | Semilla de emuladores | Correcta: tres cuentas con perfiles de sus roles, cinco categorías y tres incidencias con historial. |
@@ -136,3 +136,19 @@ Verificaciones ejecutadas el **21 de octubre de 2026**. Los resultados se regist
 | Storage de producción | Pendiente por decisión del usuario. La interfaz lo indica y desactiva el botón para adjuntar fotografías en producción. |
 
 El recorrido funcional de la sección anterior es reproducible, pero no se presenta como una ejecución completa de tres roles en el navegador de producción. Las pruebas integradas cubren ese ciclo en Firebase local; las comprobaciones de producción se limitan a las operaciones descritas en la tabla.
+
+## Corrección del primer ingreso y cambio de cuenta
+
+Se reprodujo en el navegador de producción un aviso `permission-denied` al registrar un reportante: la instantánea local del perfil permitía abrir las consultas privadas antes de que su escritura quedara confirmada en el servidor. Cerrar sesión y volver a entrar eliminaba el aviso, lo que permitió distinguir esta carrera de un permiso incorrecto del rol.
+
+El repositorio espera instantáneas del perfil confirmadas por el servidor. `AuthState` conserva la sesión en preparación durante el registro y la validación del acceso; `IncidentState` abre sus consultas después. Las suscripciones y operaciones en vuelo comprueban la generación de sesión para evitar que un error anterior aparezca en otra cuenta. Editar el perfil o solicitar recuperación de contraseña conserva las consultas y filtros vigentes.
+
+Verificación de esta corrección:
+
+- Las diez regresiones nuevas están en `test/session_state_test.dart`. Tres detectaron fallos en una copia aislada del código anterior: registro, login y operación pendiente al cambiar de sesión.
+- La suite completa del código corregido pasó **22/22**; `dart analyze lib test` terminó con `No issues found`.
+- Se recompilaron los clientes de producción y de emuladores. Firebase Hosting confirmó el despliegue del cliente corregido y el JavaScript publicado coincidió con la compilación local.
+- Se verificó un registro nuevo de reportante sin aviso, cambio a técnico en tiempo real y cierre/inicio de sesión de técnico sin aviso, usando cuentas temporales en producción. No se modificaron las cuentas del usuario; las cuentas temporales se eliminaron al terminar.
+- El navegador que tenía una versión anterior almacenada requirió recarga. Para usar la actualización, recargue con **Ctrl+F5** y vuelva a iniciar sesión.
+
+Las reglas de Firestore y Storage conservan sus restricciones por rol. Esta corrección no modifica el alcance acordado de fotografías en producción.

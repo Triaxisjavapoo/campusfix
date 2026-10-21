@@ -25,10 +25,13 @@ class AuthState extends ChangeNotifier {
   String? error;
   bool _waitingForAuth = true;
   bool _busy = false;
+  bool _openingSession = false;
   bool _disposed = false;
   String? _watchedUid;
+  int _profileGeneration = 0;
   bool get isLoading => _waitingForAuth || _busy;
-  bool get isAuthenticated => user != null && profile?.active == true;
+  bool get isAuthenticated =>
+      !_openingSession && user != null && profile?.active == true;
 
   void _onUser(User? value) {
     user = value;
@@ -37,6 +40,7 @@ class AuthState extends ChangeNotifier {
       return;
     }
     _watchedUid = value?.uid;
+    final generation = ++_profileGeneration;
     unawaited(_profileSubscription?.cancel());
     _profileSubscription = null;
     profile = null;
@@ -46,6 +50,7 @@ class AuthState extends ChangeNotifier {
           .watchProfile(value.uid)
           .listen(
             (next) {
+              if (_disposed || generation != _profileGeneration) return;
               profile = next;
               _waitingForAuth = false;
               if (next != null && !next.active) {
@@ -56,6 +61,7 @@ class AuthState extends ChangeNotifier {
               _notify();
             },
             onError: (Object error) {
+              if (_disposed || generation != _profileGeneration) return;
               this.error = friendlyError(error);
               _waitingForAuth = false;
               _notify();
@@ -66,9 +72,11 @@ class AuthState extends ChangeNotifier {
   }
 
   Future<bool> login(String email, String password) =>
-      _run(() => repository.login(email, password));
-  Future<bool> register(String name, String email, String password) =>
-      _run(() => repository.register(name, email, password));
+      _run(() => repository.login(email, password), openingSession: true);
+  Future<bool> register(String name, String email, String password) => _run(
+    () => repository.register(name, email, password),
+    openingSession: true,
+  );
   Future<bool> resetPassword(String email) =>
       _run(() => repository.resetPassword(email));
   Future<bool> sendVerificationEmail() =>
@@ -82,9 +90,13 @@ class AuthState extends ChangeNotifier {
     _notify();
   }
 
-  Future<bool> _run(Future<void> Function() action) async {
+  Future<bool> _run(
+    Future<void> Function() action, {
+    bool openingSession = false,
+  }) async {
     if (_busy) return false;
     _busy = true;
+    _openingSession = openingSession;
     error = null;
     _notify();
     try {
@@ -95,6 +107,7 @@ class AuthState extends ChangeNotifier {
       return false;
     } finally {
       _busy = false;
+      _openingSession = false;
       _notify();
     }
   }

@@ -40,7 +40,12 @@ class FirebaseRepository {
   Stream<UserProfile?> watchProfile(String uid) => firestore
       .collection('users')
       .doc(uid)
-      .snapshots()
+      .snapshots(includeMetadataChanges: true)
+      // A local registration write is visible before Security Rules can read
+      // that profile. Wait for server confirmation before opening its session.
+      .where(
+        (doc) => !doc.metadata.hasPendingWrites && !doc.metadata.isFromCache,
+      )
       .map(
         (doc) =>
             doc.exists ? UserProfile.fromMap(doc.id, _map(doc.data()!)) : null,

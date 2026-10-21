@@ -36,6 +36,7 @@ class IncidentState extends ChangeNotifier {
   bool _busy = false;
   bool _disposed = false;
   String? _identity;
+  int _generation = 0;
   bool get isLoading => _waitingForIncidents || _busy;
   bool get isSaving => _busy;
   List<Incident> get filteredIncidents => IncidentFilter(
@@ -47,12 +48,14 @@ class IncidentState extends ChangeNotifier {
   ).apply(incidents);
 
   void _bind() {
-    final actor = auth.profile;
+    final actor = auth.isAuthenticated ? auth.profile : null;
     final identity = actor?.active == true
         ? '${actor!.uid}:${actor.role.value}'
         : null;
     if (_identity == identity) return;
     _identity = identity;
+    final generation = ++_generation;
+    _busy = false;
     unawaited(_incidentSubscription?.cancel());
     unawaited(_categorySubscription?.cancel());
     unawaited(_userSubscription?.cancel());
@@ -70,34 +73,30 @@ class IncidentState extends ChangeNotifier {
     assigneeFilter = null;
     _waitingForIncidents = identity != null;
     if (identity != null && actor != null) {
-      final boundIdentity = identity;
       _incidentSubscription = repository.watchIncidents(actor).listen((value) {
-        if (_identity != boundIdentity) return;
+        if (_generation != generation) return;
         incidents = List.unmodifiable(value);
         _waitingForIncidents = false;
         _notify();
-      }, onError: (Object exception) => _streamError(exception, boundIdentity));
+      }, onError: (Object exception) => _streamError(exception, generation));
       _categorySubscription = repository.watchCategories().listen((value) {
-        if (_identity != boundIdentity) return;
+        if (_generation != generation) return;
         categories = List.unmodifiable(value);
         _notify();
-      }, onError: (Object exception) => _streamError(exception, boundIdentity));
+      }, onError: (Object exception) => _streamError(exception, generation));
       if (actor.role == UserRole.admin) {
-        _userSubscription = repository.watchUsers().listen(
-          (value) {
-            if (_identity != boundIdentity) return;
-            users = List.unmodifiable(value);
-            _notify();
-          },
-          onError: (Object exception) => _streamError(exception, boundIdentity),
-        );
+        _userSubscription = repository.watchUsers().listen((value) {
+          if (_generation != generation) return;
+          users = List.unmodifiable(value);
+          _notify();
+        }, onError: (Object exception) => _streamError(exception, generation));
       }
     }
     _notify();
   }
 
-  void _streamError(Object exception, String identity) {
-    if (_identity != identity) return;
+  void _streamError(Object exception, int generation) {
+    if (_disposed || _generation != generation) return;
     error = friendlyError(exception);
     _waitingForIncidents = false;
     _notify();
@@ -150,7 +149,7 @@ class IncidentState extends ChangeNotifier {
     required IncidentPriority priority,
   }) async {
     String? id;
-    await _run(() async {
+    final saved = await _run(() async {
       id = await repository.createIncident(
         title: title,
         description: description,
@@ -159,7 +158,7 @@ class IncidentState extends ChangeNotifier {
         priority: priority,
       );
     });
-    return id;
+    return saved ? id : null;
   }
 
   Future<bool> classifyIncident(
@@ -231,18 +230,23 @@ class IncidentState extends ChangeNotifier {
 
   Future<bool> _run(Future<void> Function() action) async {
     if (_busy) return false;
+    final generation = _generation;
     _busy = true;
     error = null;
     _notify();
     try {
       await action();
-      return true;
+      return !_disposed && _generation == generation;
     } catch (exception) {
-      error = friendlyError(exception);
+      if (!_disposed && _generation == generation) {
+        error = friendlyError(exception);
+      }
       return false;
     } finally {
-      _busy = false;
-      _notify();
+      if (!_disposed && _generation == generation) {
+        _busy = false;
+        _notify();
+      }
     }
   }
 

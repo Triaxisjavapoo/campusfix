@@ -1,5 +1,7 @@
 # Arquitectura de CampusFix
 
+Al abrir una sesión, el perfil se acepta únicamente desde una instantánea confirmada por Firestore, sin escrituras locales pendientes. El registro y la validación del login deben completar antes de suscribir las consultas del panel. Los cambios de sesión incrementan una generación interna: respuestas y errores de operaciones anteriores no pueden actualizar los datos de otra cuenta. Estas condiciones se prueban en `test/session_state_test.dart`.
+
 ## Componentes
 
 ```mermaid
