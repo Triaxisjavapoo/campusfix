@@ -975,7 +975,7 @@ class Overview extends StatelessWidget {
           IncidentTable(items: latest, open: open),
         gap(24),
         const Text(
-          'CampusFix · Universidad de Costa Rica, Sede del Sur',
+          'CampusFix · Universidad de Costa Rica, Sede del Sur · v1.0.2',
           style: TextStyle(fontSize: 11, color: Color(0xFF75867D)),
         ),
       ],

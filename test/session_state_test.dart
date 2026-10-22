@@ -188,6 +188,30 @@ void main() {
     },
   );
 
+  for (final source in ['las incidencias', 'las categorías', 'los usuarios']) {
+    test('un error de permisos identifica la consulta de $source', () {
+      session.establish(_admin);
+      session.deliverEmptyWorkspace();
+      final failure = FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+      );
+      switch (source) {
+        case 'las incidencias':
+          session.repository.incidentWatches.single.values.addError(failure);
+        case 'las categorías':
+          session.repository.categoryWatches.single.addError(failure);
+        case 'los usuarios':
+          session.repository.userWatches.single.addError(failure);
+      }
+      expect(
+        session.incidents.error,
+        contains('No se pudieron cargar $source.'),
+      );
+      expect(session.incidents.error, contains('No tienes permiso'));
+    });
+  }
+
   test('la sesión nueva conserva sus datos si llega el perfil anterior', () {
     session.establish(_admin);
     final oldProfile = session.repository.profilesFor(_admin.uid);

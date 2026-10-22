@@ -2,7 +2,7 @@
 
 Este documento separa el procedimiento reproducible de los resultados efectivamente observados. La matriz de [Requisitos](REQUISITOS.md) detalla los criterios de aceptación. Nunca ejecute la semilla de demostración contra producción.
 
-El usuario decidió conservar Cloud Storage y demostrar las fotografías gratuitamente con los emuladores reales; Storage de producción permanece pendiente. No se usa Firestore como almacenamiento alternativo de imágenes. El proyecto real es `campusfix-ae32e`, con Firestore `(default)` en `us-central1` y acceso por correo/contraseña habilitado. El sitio está publicado en [CampusFix](https://campusfix-ae32e.web.app). Las pruebas locales y las comprobaciones de producción se distinguen abajo.
+El usuario decidió conservar Cloud Storage y demostrar las fotografías gratuitamente con los emuladores reales; Storage de producción permanece pendiente. No se usa Firestore como almacenamiento alternativo de imágenes. El proyecto real es `campusfix-ae32e`, con Firestore `(default)` en `us-central1` y acceso por correo/contraseña habilitado. La versión actual es **2026.10.21.2**, disponible en [CampusFix actualizado](https://campusfix-ae32e.web.app/?v=2026.10.21.2). Las pruebas locales y las comprobaciones de producción se distinguen abajo.
 
 ## Preparación
 
@@ -13,9 +13,14 @@ flutter pub get
 npm ci
 dart analyze lib test
 flutter test
+npm run test:cache
 ```
 
-`test/domain_workflow_test.dart` valida políticas de acceso/transición, filtros, indicadores y deserialización. `test/responsive_ui_test.dart` verifica la tabla interactiva y los indicadores en anchos de 1280 y 768, con temas claro y oscuro. No necesitan el proyecto de producción. Las pruebas de reglas usan los emuladores reales de Firestore y Storage y clientes autenticados simulados de distintos roles:
+`test/domain_workflow_test.dart` valida políticas de acceso/transición, filtros, indicadores y deserialización. `test/responsive_ui_test.dart` verifica la tabla interactiva y los indicadores en anchos de 1280 y 768, con temas claro y oscuro. No necesitan el proyecto de producción.
+
+`test/session_state_test.dart` comprueba el registro y acceso sin abrir consultas antes de confirmar el perfil, la separación entre sesiones y la identificación de errores de incidencias, categorías y usuarios. `npm run test:cache` ejecuta `tests/cache-update.test.mjs`: verifica el arranque versionado, la migración acotada del worker y la caché de CampusFix, la conservación de otras aplicaciones y los encabezados de las dos configuraciones de Hosting. Estas pruebas Node no requieren emuladores.
+
+Las pruebas de reglas usan los emuladores reales de Firestore y Storage y clientes autenticados simulados de distintos roles:
 
 ```powershell
 npm run test:rules
@@ -116,39 +121,53 @@ Los emuladores no demuestran por sí mismos que los servicios de producción est
 
 ## Resultados de esta entrega
 
-Verificaciones ejecutadas el **21 de octubre de 2026**. Los resultados se registran por suite y entorno para no confundir la demostración local con el sitio publicado.
+Verificaciones registradas el **21 de octubre de 2026**. La versión actual es **2026.10.21.2**. Las filas indican qué se volvió a ejecutar para esta corrección y qué corresponde a la entrega anterior; no se atribuye una nueva ejecución a las suites de reglas o integración Firebase.
 
 | Verificación | Resultado registrado |
 | --- | --- |
 | `dart analyze lib test` | Correcto: `No issues found`. |
-| `flutter test` | **22/22**: diez pruebas de dominio, dos de widgets y diez de sesiones. Tabla interactiva e indicadores comprobados en 1280 y 768; temas claro y oscuro. |
-| `npm run test:rules` | **20/20**, Firestore y Storage locales; sin fallos. |
-| `npm run test:integration` | **8/8**, Auth, Firestore y Storage locales; flujo multiusuario, tiempo real y fotografía privada. |
+| `flutter test` | **25/25 en la versión actual**: diez pruebas de dominio, dos de widgets y trece de sesiones. Tabla interactiva e indicadores comprobados en 1280 y 768; temas claro y oscuro. Las tres regresiones añadidas identifican la consulta que origina el error: incidencias, categorías o usuarios. |
+| `npm run test:cache` | **7/7 en la versión actual**: arranque versionado, retiro exclusivo del worker propio, navegación de migración sin bucle, conservación de la URL y limpieza de recursos de CampusFix previamente identificados. |
+| `npm run test:rules` | **20/20 en la entrega anterior**, Firestore y Storage locales; sin fallos. No se volvió a ejecutar para esta corrección de caché. |
+| `npm run test:integration` | **8/8 en la entrega anterior**, Auth, Firestore y Storage locales; flujo multiusuario, tiempo real y fotografía privada. No se volvió a ejecutar para esta corrección de caché. |
 | Semilla de emuladores | Correcta: tres cuentas con perfiles de sus roles, cinco categorías y tres incidencias con historial. |
-| Compilación de producción | Código de salida 0; archivos generados en `build/web`. |
-| Compilación de emuladores | Código de salida 0; archivos generados en `build/emulator-web`. |
-| Firebase Hosting | Despliegue CLI correcto y respuesta HTTP **200** en [CampusFix](https://campusfix-ae32e.web.app). HU-20 verificada. |
+| Compilación de producción | Código de salida 0 en la versión actual; archivos generados en `build/web`. |
+| Compilación de emuladores | Código de salida 0 en la versión actual; archivos generados en `build/emulator-web`. |
+| Firebase Hosting | Despliegue CLI de la versión actual correcto. Solicitudes HEAD a las entradas verificadas devolvieron **200** y `no-cache, no-store, must-revalidate`. HU-20 verificada en [CampusFix actualizado](https://campusfix-ae32e.web.app/?v=2026.10.21.2). |
 | Authentication de producción | Proveedor de correo/contraseña habilitado; inicio de sesión administrativo correcto con cliente Firebase y navegador. |
 | Firestore de producción | Perfil administrador y cinco categorías leídos correctamente con cliente autenticado; panel y catálogo visibles en navegador. Seis índices comprobados en estado `READY`. |
 | UI de producción | Inspección visual de escritorio a 1366; acceso administrativo correcto. Formulario vacío mostró las cuatro validaciones sin guardar un incidente. |
+| Actualización en una sesión existente | Versión 2026.10.21.2 verificada en la misma sesión de la cuenta de prueba `test4`, sin el aviso anterior y conservando la sesión. Sello de versión en la esquina inferior derecha y pie Flutter `v1.0.2`. |
 | Navegador local contra emuladores | No se logró conectar desde la herramienta de navegador por aislamiento del entorno. No se afirma un recorrido local de navegador; el flujo Firebase completo se verificó mediante la integración 8/8. |
 | Tablet | Verificada en pruebas de widgets a 768. La herramienta de navegador no aplicó el cambio de viewport; no se afirma inspección visual de tablet en navegador. |
 | Storage de producción | Pendiente por decisión del usuario. La interfaz lo indica y desactiva el botón para adjuntar fotografías en producción. |
 
 El recorrido funcional de la sección anterior es reproducible, pero no se presenta como una ejecución completa de tres roles en el navegador de producción. Las pruebas integradas cubren ese ciclo en Firebase local; las comprobaciones de producción se limitan a las operaciones descritas en la tabla.
 
-## Corrección del primer ingreso y cambio de cuenta
+## Primera corrección del primer ingreso y cambio de cuenta
 
 Se reprodujo en el navegador de producción un aviso `permission-denied` al registrar un reportante: la instantánea local del perfil permitía abrir las consultas privadas antes de que su escritura quedara confirmada en el servidor. Cerrar sesión y volver a entrar eliminaba el aviso, lo que permitió distinguir esta carrera de un permiso incorrecto del rol.
 
 El repositorio espera instantáneas del perfil confirmadas por el servidor. `AuthState` conserva la sesión en preparación durante el registro y la validación del acceso; `IncidentState` abre sus consultas después. Las suscripciones y operaciones en vuelo comprueban la generación de sesión para evitar que un error anterior aparezca en otra cuenta. Editar el perfil o solicitar recuperación de contraseña conserva las consultas y filtros vigentes.
 
-Verificación de esta corrección:
+Verificación histórica de esa primera corrección, anterior a la versión 2026.10.21.2:
 
 - Las diez regresiones nuevas están en `test/session_state_test.dart`. Tres detectaron fallos en una copia aislada del código anterior: registro, login y operación pendiente al cambiar de sesión.
 - La suite completa del código corregido pasó **22/22**; `dart analyze lib test` terminó con `No issues found`.
 - Se recompilaron los clientes de producción y de emuladores. Firebase Hosting confirmó el despliegue del cliente corregido y el JavaScript publicado coincidió con la compilación local.
 - Se verificó un registro nuevo de reportante sin aviso, cambio a técnico en tiempo real y cierre/inicio de sesión de técnico sin aviso, usando cuentas temporales en producción. No se modificaron las cuentas del usuario; las cuentas temporales se eliminaron al terminar.
-- El navegador que tenía una versión anterior almacenada requirió recarga. Para usar la actualización, recargue con **Ctrl+F5** y vuelva a iniciar sesión.
+- Después se identificó que algunos navegadores seguían ejecutando el cliente anterior almacenado en caché. La corrección de distribución y su comprobación están en la sección siguiente.
 
 Las reglas de Firestore y Storage conservan sus restricciones por rol. Esta corrección no modifica el alcance acordado de fotografías en producción.
+
+## Corrección de actualización y caché: 2026.10.21.2
+
+La inspección del cliente anterior mostró que las respuestas HEAD de `/`, `flutter_bootstrap.js` y `main.dart.js` permitían `max-age=3600`. El documento cargado tampoco tenía el marcador de versión nuevo. Por eso un navegador podía continuar ejecutando el cliente anterior aunque Hosting ya contuviera la primera corrección del acceso.
+
+La versión actual envía `no-cache, no-store, must-revalidate` para la entrada de la aplicación, los JavaScript y `version.json`. `index.html` carga el bootstrap con su versión, y el bootstrap solicita `main.dart.js` con la misma versión. El arranque no registra un nuevo service worker. Retira únicamente el worker Flutter que coincide con la ruta y el alcance de CampusFix y limpia recursos de caché después de identificar el documento de esta aplicación. Conserva Authentication, IndexedDB, localStorage y los recursos de otras aplicaciones.
+
+Las siete pruebas Node de `tests/cache-update.test.mjs` pasaron. También pasaron las 25 pruebas Flutter y el análisis Dart sin problemas, se generaron ambas compilaciones con código de salida 0 y Hosting confirmó el despliegue. Las comprobaciones HEAD posteriores devolvieron 200 y los encabezados sin almacenamiento en caché. En producción se abrió la actualización dentro de la misma sesión de `test4`: desapareció el aviso anterior y se conservó el acceso. Las reglas de seguridad mantienen los permisos por rol.
+
+Para abrir esta corrección, use [el enlace versionado](https://campusfix-ae32e.web.app/?v=2026.10.21.2). Compruebe **v2026.10.21.2** en la esquina inferior derecha y **v1.0.2** en el pie de la aplicación Flutter. No se necesita borrar los datos del navegador ni cerrar la sesión. Si aparece el mensaje de actualización que pide cerrar la pestaña porque un worker anterior sigue controlándola, cierre esa pestaña y abra de nuevo el enlace versionado.
+
+En siguientes cambios, incremente conjuntamente la versión del meta, sello y script de `web/index.html` y la de `web/flutter_bootstrap.js`; ajuste la expectativa de versión de las pruebas, ejecute `npm run test:cache` y después compile. Las fuentes deben coincidir. Actualice también el enlace compartido para que no conserve el identificador fijo de una entrega anterior.

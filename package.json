@@ -8,6 +8,7 @@
   "scripts": {
     "emulators": "node scripts/run-firebase-local.mjs start",
     "demo": "node scripts/run-firebase-local.mjs demo",
+    "test:cache": "node --test tests/cache-update.test.mjs",
     "test:rules": "node scripts/run-firebase-local.mjs test",
     "test:integration": "node scripts/run-firebase-local.mjs integration",
     "seed:emulators": "node scripts/seed-emulators.mjs",

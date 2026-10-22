@@ -4,7 +4,7 @@ Aplicación Flutter Web para reportar, asignar y atender incidencias del campus.
 
 Utiliza Firebase Authentication para las cuentas, Cloud Firestore para los datos y el seguimiento en tiempo real, Cloud Storage para fotografías privadas y Firebase Hosting para publicar el cliente web. Incluye tres roles: reportante, técnico y administrador.
 
-**Sitio publicado:** [Abrir CampusFix](https://campusfix-ae32e.web.app). Authentication por correo/contraseña está habilitado; el proyecto `campusfix-ae32e` tiene Firestore `(default)` en `us-central1`, cinco categorías y una cuenta administradora inicial. Su acceso se entrega en un archivo separado, fuera del código y del paquete compartible.
+**Sitio publicado:** [Abrir CampusFix actualizado](https://campusfix-ae32e.web.app/?v=2026.10.21.2). La versión visible es `v2026.10.21.2`. Authentication por correo/contraseña está habilitado; el proyecto `campusfix-ae32e` tiene Firestore `(default)` en `us-central1`, cinco categorías y una cuenta administradora inicial. Su acceso se entrega en un archivo separado, fuera del código y del paquete compartible.
 
 **Fotografías:** se conserva Cloud Storage y se demuestra gratuitamente con los emuladores reales de Firebase. Por decisión del usuario, las fotografías de producción quedan pendientes para evitar activar facturación. El sitio muestra esa limitación y no ofrece el botón de adjuntar en producción. No se reemplaza Storage con imágenes guardadas en Firestore.
 
@@ -26,6 +26,7 @@ flutter pub get
 npm ci
 dart analyze lib test
 flutter test
+npm run test:cache
 ```
 
 Para probar Firebase localmente, siga [la guía de emuladores y pruebas](docs/PRUEBAS.md). Para conectar su proyecto y publicar, siga [la guía completa de Firebase](docs/FIREBASE.md). La publicación requiere la configuración real de una aplicación web del proyecto y acceso autorizado a sus servicios.
@@ -54,4 +55,4 @@ npx firebase deploy --project campusfix-ae32e --only firestore:rules,firestore:i
 
 ## Estado de entrega
 
-Verificado el 21 de octubre de 2026: análisis Dart sin problemas, **12/12** pruebas Flutter, **20/20** pruebas de reglas y **8/8** de integración Firebase; compilaciones de producción y emuladores terminadas correctamente. Hosting se desplegó y devolvió HTTP 200. El acceso administrativo, el panel y las cinco categorías se comprobaron en el navegador de producción. Los límites de esa evidencia y el procedimiento reproducible están en [Pruebas](docs/PRUEBAS.md). Las fotografías de producción permanecen pendientes.
+Verificado el 21 de octubre de 2026: análisis Dart sin problemas, **25/25** pruebas Flutter y **7/7** pruebas de actualización; compilaciones de producción y emuladores terminadas correctamente. La entrega inicial también pasó **20/20** pruebas de reglas y **8/8** de integración Firebase. Hosting se desplegó y devolvió HTTP 200 con las entradas sin caché persistente. Se comprobó la actualización en la misma sesión `test4`, conservando su acceso y sin el aviso de permisos. El acceso administrativo, el panel y las cinco categorías se comprobaron previamente en el navegador de producción. Los límites de esa evidencia y el procedimiento reproducible están en [Pruebas](docs/PRUEBAS.md). Las fotografías de producción permanecen pendientes.

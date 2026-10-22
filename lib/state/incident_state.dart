@@ -73,31 +73,43 @@ class IncidentState extends ChangeNotifier {
     assigneeFilter = null;
     _waitingForIncidents = identity != null;
     if (identity != null && actor != null) {
-      _incidentSubscription = repository.watchIncidents(actor).listen((value) {
-        if (_generation != generation) return;
-        incidents = List.unmodifiable(value);
-        _waitingForIncidents = false;
-        _notify();
-      }, onError: (Object exception) => _streamError(exception, generation));
-      _categorySubscription = repository.watchCategories().listen((value) {
-        if (_generation != generation) return;
-        categories = List.unmodifiable(value);
-        _notify();
-      }, onError: (Object exception) => _streamError(exception, generation));
-      if (actor.role == UserRole.admin) {
-        _userSubscription = repository.watchUsers().listen((value) {
+      _incidentSubscription = repository.watchIncidents(actor).listen(
+        (value) {
           if (_generation != generation) return;
-          users = List.unmodifiable(value);
+          incidents = List.unmodifiable(value);
+          _waitingForIncidents = false;
           _notify();
-        }, onError: (Object exception) => _streamError(exception, generation));
+        },
+        onError: (Object exception) =>
+            _streamError(exception, generation, 'las incidencias'),
+      );
+      _categorySubscription = repository.watchCategories().listen(
+        (value) {
+          if (_generation != generation) return;
+          categories = List.unmodifiable(value);
+          _notify();
+        },
+        onError: (Object exception) =>
+            _streamError(exception, generation, 'las categorías'),
+      );
+      if (actor.role == UserRole.admin) {
+        _userSubscription = repository.watchUsers().listen(
+          (value) {
+            if (_generation != generation) return;
+            users = List.unmodifiable(value);
+            _notify();
+          },
+          onError: (Object exception) =>
+              _streamError(exception, generation, 'los usuarios'),
+        );
       }
     }
     _notify();
   }
 
-  void _streamError(Object exception, int generation) {
+  void _streamError(Object exception, int generation, String source) {
     if (_disposed || _generation != generation) return;
-    error = friendlyError(exception);
+    error = 'No se pudieron cargar $source. ${friendlyError(exception)}';
     _waitingForIncidents = false;
     _notify();
   }

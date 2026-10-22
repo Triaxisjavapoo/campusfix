@@ -13,7 +13,7 @@ Guía para esta implementación de CampusFix. Ejecute los comandos desde la raí
 | Authentication | Correo electrónico/contraseña habilitado y comprobado mediante API e inicio de sesión. |
 | Cuenta administradora y catálogo | Cuenta inicial creada, perfil con rol administrador y cinco categorías de producción. Credenciales entregadas por separado; no se incluyen en el repositorio ni en el ZIP. |
 | Cloud Storage | Integración y fotografías verificadas gratis con los emuladores. Producción queda pendiente por decisión del usuario. |
-| Hosting | [CampusFix publicado](https://campusfix-ae32e.web.app), despliegue correcto y respuesta HTTP 200. |
+| Hosting | [CampusFix actualizado](https://campusfix-ae32e.web.app/?v=2026.10.21.2), versión **2026.10.21.2**, despliegue correcto y entradas verificadas con HTTP 200 y `no-store`. |
 | Pruebas | Resultados reales y límites de verificación en [Pruebas](PRUEBAS.md). |
 
 No se activa Blaze para esta entrega ni se sustituye Storage por fotografías en Firestore. La guía distingue el despliegue actual de la habilitación futura de Storage.
@@ -132,11 +132,26 @@ Ejecute primero las verificaciones locales descritas en [Pruebas](PRUEBAS.md). C
 ```powershell
 dart analyze lib test
 flutter test
+npm run test:cache
 flutter build web --release --dart-define-from-file=firebase.config.json
 npx firebase deploy --project campusfix-ae32e --only firestore:rules,firestore:indexes,hosting
 ```
 
 `firebase.json` usa `build/web` como carpeta pública y envía las rutas de la aplicación a `index.html`. La CLI muestra la dirección de Hosting al terminar; registre esa dirección real como evidencia de HU-20. La consola permite consultar las versiones desplegadas. [Despliegue oficial de Hosting](https://firebase.google.com/docs/hosting/quickstart#deploy).
+
+### Distribución de la versión y conservación de sesiones
+
+La entrega actual es **2026.10.21.2**. Use [su enlace versionado](https://campusfix-ae32e.web.app/?v=2026.10.21.2); el documento muestra el sello **v2026.10.21.2** abajo a la derecha y la interfaz Flutter muestra **v1.0.2** en el pie. El bootstrap y `main.dart.js` se solicitan también con la versión correspondiente.
+
+Para la siguiente publicación, incremente **la misma versión** en `web/index.html` (meta, sello visible y URL del script) y en `web/flutter_bootstrap.js` antes de compilar. Mantenga coherente la versión esperada por `tests/cache-update.test.mjs`, ejecute `npm run test:cache` y genere las dos compilaciones. Comparta entonces el enlace con el identificador nuevo: reutilizar una URL con la versión fija anterior dejaría un marcador de entrega desactualizado.
+
+La configuración de Hosting envía `Cache-Control: no-cache, no-store, must-revalidate` para `/`, `/index.html`, los JavaScript y `/version.json`. La verificación actual de esas entradas devolvió HTTP 200 con los encabezados previstos. En el despliegue anterior, `/`, `flutter_bootstrap.js` y `main.dart.js` conservaban `max-age=3600`, y el documento que seguía abierto no contenía el marcador nuevo: ese cliente almacenado podía ocultar la corrección ya publicada.
+
+`web/flutter_bootstrap.js` no registra otro service worker. Migra únicamente el worker Flutter cuyo alcance y ruta corresponden a CampusFix y las entradas de caché identificadas como recursos de esta aplicación. No borra Authentication, IndexedDB, localStorage ni los datos de otras aplicaciones. La comprobación de producción se hizo en la misma sesión de la cuenta de prueba `test4`: la nueva versión abrió sin el aviso anterior y mantuvo el acceso. Los permisos de Firestore y Storage no se debilitaron.
+
+`npm run test:cache` ejecuta siete comprobaciones Node de esta estrategia; no requiere emuladores. En esta corrección pasaron **7/7**, además de **25/25** pruebas Flutter y el análisis sin problemas. Las pruebas de reglas **20/20** y de integración Firebase **8/8** corresponden a la entrega anterior; no se afirma una nueva ejecución para este cambio. El detalle está en [Pruebas](PRUEBAS.md).
+
+Para recibir la actualización, abra el enlace versionado y compruebe los sellos. No necesita borrar datos del navegador ni cerrar la sesión. Si el arranque indica que un worker antiguo aún controla la pestaña, cierre esa pestaña y abra otra vez el enlace versionado.
 
 El comando actual omite Storage porque el usuario dejó ese servicio pendiente en producción. Para habilitar fotografías posteriormente:
 
@@ -156,7 +171,7 @@ La configuración CORS permite al navegador leer los bytes desde el origen indic
 
 ## 9. Comprobación después de publicar
 
-Abra [CampusFix](https://campusfix-ae32e.web.app) en dos sesiones de navegador distintas. Registre un reportante y cree un incidente. Con el administrador, clasifíquelo y asígnelo a un técnico. Con ese técnico, inicie la atención, agregue un avance y resuelva con descripción. Finalmente cierre el caso como administrador. Compruebe que la primera sesión recibe los cambios, que el historial identifica autor y fecha y que una cuenta ajena no puede leer el incidente. Este recorrido es una instrucción de aceptación; sus pasos efectivamente ejecutados se distinguen en [Pruebas](PRUEBAS.md).
+Abra [CampusFix actualizado](https://campusfix-ae32e.web.app/?v=2026.10.21.2) en dos sesiones de navegador distintas y confirme los sellos de versión. Registre un reportante y cree un incidente. Con el administrador, clasifíquelo y asígnelo a un técnico. Con ese técnico, inicie la atención, agregue un avance y resuelva con descripción. Finalmente cierre el caso como administrador. Compruebe que la primera sesión recibe los cambios, que el historial identifica autor y fecha y que una cuenta ajena no puede leer el incidente. Este recorrido es una instrucción de aceptación; sus pasos efectivamente ejecutados se distinguen en [Pruebas](PRUEBAS.md).
 
 La carga y lectura privada de imágenes se verifican ahora en los emuladores, siguiendo [Pruebas](PRUEBAS.md). Repita esas comprobaciones en producción únicamente después de habilitar Storage, configurar su bucket y desplegar sus reglas.
 
