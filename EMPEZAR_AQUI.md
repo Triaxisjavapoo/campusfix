@@ -27,6 +27,8 @@ npm run demo
 
 La entrega incluye el cliente ya compilado en `build/emulator-web`. Si cambia el código, vuelva a construirlo antes de demostrarlo:
 
+Si obtuvo el proyecto clonándolo desde GitHub, esa compilación no está incluida en el repositorio. Ejecute también los comandos siguientes antes de `npm run demo`:
+
 ```powershell
 flutter pub get
 flutter build web --release --dart-define-from-file=firebase.emulators.json --output build/emulator-web

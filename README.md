@@ -21,6 +21,17 @@ npm run demo
 
 Abra [CampusFix local](http://127.0.0.1:5000). El comando inicia Authentication, Firestore, Storage y Hosting locales, y carga las cuentas y datos de ejemplo automáticamente. La compilación de demostración está en `build/emulator-web`. Las cuentas de los tres roles están en [Pruebas](docs/PRUEBAS.md); `Ctrl+C` detiene los emuladores.
 
+Si clonó el repositorio desde GitHub, genere primero el cliente local: las carpetas `build/` y `node_modules/` no se guardan en Git. Necesita Flutter estable además de Node.js y Java:
+
+```powershell
+flutter pub get
+flutter build web --release --dart-define-from-file=firebase.emulators.json --output build/emulator-web
+npm ci
+npm run demo
+```
+
+Subir cambios a GitHub guarda el código y su historial. Para actualizar el sitio publicado, compile y despliegue también en Firebase con los comandos de la sección «Compilar para producción».
+
 Para modificar el código o repetir las pruebas Flutter, instale además Flutter estable con soporte web. Las dependencias concretas quedan registradas en `pubspec.lock` y `package-lock.json`.
 
 ```powershell
