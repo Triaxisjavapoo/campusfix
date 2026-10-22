@@ -78,3 +78,7 @@ Las pantallas están en `lib/ui/app.dart`; los controladores `AuthState`, `Incid
 | Paquetes utilizados | [PAQUETES.md](PAQUETES.md). |
 | Entorno local | [ENTORNO_LOCAL.md](ENTORNO_LOCAL.md). |
 | Publicación | [CampusFix en Firebase Hosting](https://campusfix-ae32e.web.app); configuración en [FIREBASE.md](FIREBASE.md). |
+
+## Ampliación funcional: eliminación administrativa
+
+El administrador activo puede eliminar permanentemente un reporte desde su detalle, confirmando el número del caso. La operación retira fotografías, comentarios e historial y actualiza los listados e indicadores. Los demás roles carecen del botón y del permiso de servidor. Un bloqueo de eliminación impide cambios nuevos y permite completar un proceso interrumpido. Esta función amplía el alcance original del enunciado.

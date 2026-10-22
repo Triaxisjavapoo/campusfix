@@ -4,7 +4,7 @@
 // Firebase needs a connection; legacy Flutter offline caches must not keep an
 // older application running after a deployment. Auth persistence is untouched.
 (() => {
-  const buildVersion = '2026.10.21.4';
+  const buildVersion = '2026.10.21.5';
   const migrationParameter = '__campusfix_update';
   const appBase = new URL('.', document.baseURI);
   const workerUrl = new URL('flutter_service_worker.js', appBase);

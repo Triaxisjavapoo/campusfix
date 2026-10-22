@@ -34,6 +34,9 @@ Si el reporte deja de ser necesario antes de iniciar atención y la acción est�
 4. Use **Asignar técnico** y seleccione un técnico activo. El estado cambia a **Asignada** y queda registrado el responsable.
 5. Supervise los avances y fotografías desde el detalle.
 6. Cuando el técnico lo marque **Resuelta**, revise la solución y use **Cerrar incidencia**. El estado pasa a **Cerrada**.
+7. Para retirar un caso definitivamente, abra su detalle y pulse **Eliminar reporte** en **Gestión del caso**. Escriba su número exacto y confirme con **Eliminar permanentemente**. Se borran el reporte, fotografías, comentarios e historial; la operación no se puede deshacer. **Conservar reporte** cierra la confirmación sin borrar. Esta opción solo está disponible para el administrador activo.
+
+Si la conexión interrumpe el borrado, el reporte conserva el aviso de eliminación en curso. Abra de nuevo el caso y use **Reintentar eliminación**. Mientras ese proceso esté pendiente no se admiten comentarios, fotografías ni cambios de estado. Cancelar un reporte es una transición del flujo; eliminarlo retira sus datos permanentemente.
 
 En **Vista general** encontrará el resumen operativo. En **Indicadores** podrá consultar las cantidades de casos, abiertos, en atención, resueltos y cerrados, junto al resumen por categoría y prioridad. Los casos abiertos incluyen las etapas que todavía requieren gestión; los rechazados y cancelados son resultados alternativos. Los indicadores se actualizan con los datos de la operación.
 

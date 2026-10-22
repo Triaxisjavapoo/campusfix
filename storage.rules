@@ -3,6 +3,13 @@ service firebase.storage {
   match /b/{bucket}/o {
     function signedIn() { return request.auth != null; }
     function user() { return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data; }
+    function deleting(incidentId) {
+      let incident = firestore.get(/databases/(default)/documents/incidents/$(incidentId)).data;
+      return 'deleting' in incident && incident.deleting == true;
+    }
+    function deletingAsAdmin(incidentId) {
+      return signedIn() && user().active == true && user().role == 'admin' && deleting(incidentId);
+    }
     function participant(incidentId) {
       let incident = firestore.get(/databases/(default)/documents/incidents/$(incidentId)).data;
       return signedIn() && user().active == true &&
@@ -11,12 +18,16 @@ service firebase.storage {
     }
     match /incidents/{incidentId}/{uploaderId}/{evidenceId} {
       allow read: if participant(incidentId);
-      allow create: if resource == null && participant(incidentId) && request.auth.uid == uploaderId &&
+      allow create: if resource == null && participant(incidentId) && !deleting(incidentId) && request.auth.uid == uploaderId &&
         evidenceId.size() <= 128 && request.resource.size > 0 && request.resource.size <= 5 * 1024 * 1024 &&
         request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp'];
-      allow delete: if signedIn() && request.auth.uid == uploaderId && user().active == true &&
-        !firestore.exists(/databases/(default)/documents/incidents/$(incidentId)/evidence/$(evidenceId));
+      allow delete: if deletingAsAdmin(incidentId) ||
+        (signedIn() && request.auth.uid == uploaderId && user().active == true &&
+        !firestore.exists(/databases/(default)/documents/incidents/$(incidentId)/evidence/$(evidenceId)));
       allow update: if false;
+    }
+    match /incidents/{incidentId}/{rest=**} {
+      allow list: if deletingAsAdmin(incidentId);
     }
     match /{allPaths=**} { allow read, write: if false; }
   }

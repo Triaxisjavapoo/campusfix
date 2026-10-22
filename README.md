@@ -2,7 +2,7 @@
 
 Aplicación Flutter Web para la gestión de incidencias y solicitudes de servicio de la Universidad de Costa Rica, Sede del Sur. Forma parte del Proyecto Integrador 1 de IF0009, II Ciclo 2026.
 
-[Abrir CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.4)
+[Abrir CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.5)
 
 ## Funciones principales
 
@@ -11,6 +11,7 @@ Aplicación Flutter Web para la gestión de incidencias y solicitudes de servici
 - Asignación de responsables y seguimiento del ciclo de atención.
 - Fotografías privadas, comentarios, historial de cambios e indicadores del campus.
 - Administración de categorías, usuarios y roles.
+- Eliminación permanente de reportes y sus datos asociados, exclusiva del administrador y con confirmación.
 - Interfaz con identidad visual UCR y temas claro y oscuro.
 
 Los roles disponibles son reportante, técnico y administrador. Cada cuenta accede a las operaciones y los reportes correspondientes a su rol.

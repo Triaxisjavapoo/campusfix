@@ -773,7 +773,7 @@ class Overview extends StatelessWidget {
           IncidentTable(items: latest, open: open),
         gap(24),
         Text(
-          'CampusFix · Proyecto académico · UCR, Sede del Sur · v1.0.4',
+          'CampusFix · Proyecto académico · UCR, Sede del Sur · v1.0.5',
           style: TextStyle(
             fontSize: 11,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -1792,6 +1792,12 @@ class _IncidentDetailState extends State<IncidentDetail> {
             ),
           ],
         ),
+        if (item.deleting) ...[
+          gap(),
+          const Notice(
+            'Este reporte está en proceso de eliminación y no admite cambios. Si la operación se interrumpió, un administrador puede reintentar la eliminación.',
+          ),
+        ],
         gap(26),
         LayoutBuilder(
           builder: (c, box) {
@@ -1883,6 +1889,7 @@ class _IncidentDetailState extends State<IncidentDetail> {
                       ),
                     ),
                   if (allowed.isEmpty &&
+                      !item.deleting &&
                       !IncidentPolicy.canAssign(item, actor) &&
                       !IncidentPolicy.canClassify(item, actor))
                     const Text(
@@ -1898,6 +1905,26 @@ class _IncidentDetailState extends State<IncidentDetail> {
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
+                  if (IncidentPolicy.canDelete(item, actor)) ...[
+                    gap(20),
+                    const Divider(),
+                    gap(12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: state.isSaving ? null : deleteReport,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        label: Text(
+                          item.deleting
+                              ? 'Reintentar eliminación'
+                              : 'Eliminar reporte',
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );
@@ -1921,7 +1948,7 @@ class _IncidentDetailState extends State<IncidentDetail> {
               Row(
                 children: [
                   Expanded(child: title('Fotografías y evidencias', 18)),
-                  if (emulatorMode || storageReady)
+                  if ((emulatorMode || storageReady) && !item.deleting)
                     OutlinedButton.icon(
                       onPressed: state.isSaving ? null : upload,
                       icon: const Icon(
@@ -1939,39 +1966,40 @@ class _IncidentDetailState extends State<IncidentDetail> {
                 ),
                 gap(),
               ],
-              StreamBuilder<List<IncidentEvidence>>(
-                stream: evidence,
-                builder: (context, snap) {
-                  if (snap.hasError) {
-                    return const ErrorNotice(
-                      'No se pudo consultar la evidencia. Revisa los permisos.',
-                    );
-                  }
-                  if (!snap.hasData) return const LinearProgressIndicator();
-                  final files = snap.data!;
-                  if (files.isEmpty) {
-                    return const Text(
-                      'Todavía no se han adjuntado fotografías.',
-                      style: TextStyle(fontSize: 13),
-                    );
-                  }
-                  return Wrap(
-                    spacing: 14,
-                    runSpacing: 14,
-                    children: files
-                        .map(
-                          (x) => SizedBox(
-                            width: 190,
-                            child: EvidenceTile(
-                              key: ValueKey(x.id),
-                              evidence: x,
+              if (!item.deleting)
+                StreamBuilder<List<IncidentEvidence>>(
+                  stream: evidence,
+                  builder: (context, snap) {
+                    if (snap.hasError) {
+                      return const ErrorNotice(
+                        'No se pudo consultar la evidencia. Revisa los permisos.',
+                      );
+                    }
+                    if (!snap.hasData) return const LinearProgressIndicator();
+                    final files = snap.data!;
+                    if (files.isEmpty) {
+                      return const Text(
+                        'Todavía no se han adjuntado fotografías.',
+                        style: TextStyle(fontSize: 13),
+                      );
+                    }
+                    return Wrap(
+                      spacing: 14,
+                      runSpacing: 14,
+                      children: files
+                          .map(
+                            (x) => SizedBox(
+                              width: 190,
+                              child: EvidenceTile(
+                                key: ValueKey(x.id),
+                                evidence: x,
+                              ),
                             ),
-                          ),
-                        )
-                        .toList(),
-                  );
-                },
-              ),
+                          )
+                          .toList(),
+                    );
+                  },
+                ),
             ],
           ),
         ),
@@ -2192,6 +2220,85 @@ class _IncidentDetailState extends State<IncidentDetail> {
       ],
     ),
   );
+  Future<void> deleteReport() async {
+    final item = widget.incident;
+    final state = context.read<IncidentState>();
+    final auth = context.read<AuthState>();
+    final actor = auth.profile;
+    if (actor == null ||
+        !IncidentPolicy.canDelete(item, actor) ||
+        state.isSaving) {
+      return;
+    }
+    final controller = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, update) => AlertDialog(
+          icon: Icon(
+            Icons.delete_forever_outlined,
+            color: Theme.of(dialogContext).colorScheme.error,
+          ),
+          title: const Text('Eliminar reporte permanentemente'),
+          content: SizedBox(
+            width: 440,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${item.number} · ${item.title}'),
+                gap(),
+                const Text(
+                  'Se eliminarán el reporte, sus fotografías, comentarios e historial. Esta acción no se puede deshacer.',
+                ),
+                gap(20),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  onChanged: (_) => update(() {}),
+                  decoration: InputDecoration(
+                    labelText: 'Escribe ${item.number} para confirmar',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Conservar reporte'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
+              onPressed: controller.text.trim() == item.number
+                  ? () => Navigator.pop(dialogContext, true)
+                  : null,
+              child: const Text('Eliminar permanentemente'),
+            ),
+          ],
+        ),
+      ),
+    );
+    controller.dispose();
+    if (!mounted || confirmed != true) return;
+    final messenger = ScaffoldMessenger.of(context);
+    widget.back();
+    final ok = await state.deleteIncident(item);
+    if (messenger.mounted && auth.profile?.uid == actor.uid) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            ok
+                ? 'Reporte eliminado permanentemente.'
+                : state.error ?? 'No se pudo completar la eliminación.',
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> transition(IncidentStatus next) async {
     final note = await askNote(
       context,

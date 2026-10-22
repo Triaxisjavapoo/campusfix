@@ -30,6 +30,9 @@ function fixture(
       return "reporter";
     },
     storage: {
+      async list() {
+        return { data: [], error: null };
+      },
       async upload(path) {
         uploads.push(path);
         return { error: null };

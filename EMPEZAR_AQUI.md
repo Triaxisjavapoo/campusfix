@@ -2,7 +2,7 @@
 
 ## Acceso al sitio
 
-[Abrir CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.4).
+[Abrir CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.5).
 
 El acceso utiliza correo electrónico y contraseña. Las cuentas nuevas tienen el rol de reportante. La administración asigna los roles del personal desde **Usuarios y roles** y gestiona el catálogo desde **Categorías**.
 

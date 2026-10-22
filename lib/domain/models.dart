@@ -133,6 +133,7 @@ class Incident {
     this.closedAt,
     this.version = 1,
     this.lastEventId = '',
+    this.deleting = false,
   });
   final String id;
   final String number;
@@ -153,6 +154,7 @@ class Incident {
   final DateTime? closedAt;
   final int version;
   final String lastEventId;
+  final bool deleting;
 
   factory Incident.fromMap(String id, Map<String, dynamic> map) => Incident(
     id: id,
@@ -174,6 +176,7 @@ class Incident {
     closedAt: _date(map['closedAt']),
     version: (map['version'] as num?)?.toInt() ?? 1,
     lastEventId: map['lastEventId'] as String? ?? '',
+    deleting: map['deleting'] == true,
   );
 }
 

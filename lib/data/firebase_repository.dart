@@ -380,6 +380,11 @@ class FirebaseRepository {
         throw const CampusFixException('La incidencia ya no está disponible.');
       }
       final current = Incident.fromMap(snapshot.id, _map(snapshot.data()!));
+      if (current.deleting) {
+        throw const CampusFixException(
+          'Este reporte está en proceso de eliminación.',
+        );
+      }
       if (current.version != expected.version) {
         throw const CampusFixException(
           'La incidencia cambió mientras la editabas. Revisa los datos actuales e inténtalo de nuevo.',
@@ -537,6 +542,59 @@ class FirebaseRepository {
       evidence.storageProvider == 'supabase'
       ? _supabaseEvidence.download(evidence)
       : storage.ref(evidence.path).getData(maxEvidenceBytes);
+
+  Future<void> deleteIncident(Incident incident) async {
+    await _requireAdmin();
+    if (EvidenceConfig.provider == 'supabase') {
+      await _supabaseEvidence.deleteIncident(incident);
+      return;
+    }
+    final ref = firestore.collection('incidents').doc(incident.id);
+    final exists = await firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(ref);
+      if (!snapshot.exists) return false;
+      final current = Incident.fromMap(snapshot.id, _map(snapshot.data()!));
+      if (!current.deleting && current.version != incident.version) {
+        throw const CampusFixException(
+          'El reporte cambió. Revisa sus datos antes de eliminarlo.',
+        );
+      }
+      if (!current.deleting) transaction.update(ref, {'deleting': true});
+      return true;
+    });
+    if (!exists) return;
+    // Keep the parent locked until both object and document cleanup succeed.
+    // A failed operation leaves a visible, retryable report for administrators.
+    try {
+      await _deleteStorageTree(storage.ref('incidents/${incident.id}'));
+      for (final name in ['evidence', 'comments', 'events']) {
+        while (true) {
+          final children = await ref.collection(name).limit(100).get();
+          if (children.docs.isEmpty) break;
+          final batch = firestore.batch();
+          for (final doc in children.docs) {
+            batch.delete(doc.reference);
+          }
+          await batch.commit();
+        }
+      }
+      await ref.delete();
+    } catch (_) {
+      throw const CampusFixException(
+        'No se completó la eliminación. El reporte quedó bloqueado; vuelve a abrirlo y selecciona Reintentar eliminación.',
+      );
+    }
+  }
+
+  Future<void> _deleteStorageTree(Reference folder) async {
+    final children = await folder.listAll();
+    for (final prefix in children.prefixes) {
+      await _deleteStorageTree(prefix);
+    }
+    for (final item in children.items) {
+      await item.delete();
+    }
+  }
 
   Future<void> saveCategory({
     String? id,

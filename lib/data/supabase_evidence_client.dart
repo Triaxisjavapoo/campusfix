@@ -51,11 +51,11 @@ class SupabaseEvidenceClient {
           'Authorization': 'Bearer $token',
           'Content-Type': ?contentType,
         };
-        final response =
-            await (method == 'POST'
-                    ? http.post(url, headers: headers, body: bytes)
-                    : http.get(url, headers: headers))
-                .timeout(const Duration(seconds: 90));
+        final response = await (switch (method) {
+          'POST' => http.post(url, headers: headers, body: bytes),
+          'DELETE' => http.delete(url, headers: headers),
+          _ => http.get(url, headers: headers),
+        }).timeout(const Duration(seconds: 90));
         if (response.statusCode == 401 && attempt == 0) continue;
         if (auth.currentUser?.uid != user.uid) {
           throw const CampusFixException(
@@ -66,26 +66,52 @@ class SupabaseEvidenceClient {
           return response;
         }
         throw CampusFixException(switch (response.statusCode) {
+          409 =>
+            method == 'DELETE'
+                ? 'El reporte cambió. Revisa sus datos antes de eliminarlo.'
+                : 'Este reporte está en proceso de eliminación.',
           400 || 415 => 'Adjunta una imagen JPEG, PNG o WebP válida.',
           401 => 'Tu sesión venció. Vuelve a iniciar sesión.',
-          403 => 'No tienes permiso para acceder a las fotos de este reporte.',
+          403 =>
+            method == 'DELETE'
+                ? 'Solo un administrador activo puede eliminar reportes.'
+                : 'No tienes permiso para acceder a las fotos de este reporte.',
           404 => 'La fotografía o el reporte ya no están disponibles.',
           413 => 'Cada imagen debe pesar como máximo 5 MB.',
           429 || 507 => 'Se alcanzó el límite de fotografías del servicio.',
           _ =>
-            'No se pudo completar la operación con la fotografía. Inténtalo de nuevo.',
+            method == 'DELETE'
+                ? 'No se completó la eliminación. Reabre el reporte y selecciona Reintentar eliminación.'
+                : 'No se pudo completar la operación con la fotografía. Inténtalo de nuevo.',
         });
       }
     } on TimeoutException {
-      throw const CampusFixException(
-        'La conexión tardó demasiado. Revisa el reporte antes de volver a adjuntar la foto.',
+      throw CampusFixException(
+        method == 'DELETE'
+            ? 'La eliminación tardó demasiado. Revisa el listado y reintenta si el reporte sigue pendiente.'
+            : 'La conexión tardó demasiado. Revisa el reporte antes de volver a adjuntar la foto.',
       );
     } on http.ClientException {
-      throw const CampusFixException(
-        'No se pudo conectar con las fotografías. Revisa tu conexión.',
+      throw CampusFixException(
+        method == 'DELETE'
+            ? 'No se pudo conectar. Revisa el estado del reporte antes de reintentar la eliminación.'
+            : 'No se pudo conectar con las fotografías. Revisa tu conexión.',
       );
     }
     throw const CampusFixException('No se pudo validar la sesión.');
+  }
+
+  Future<void> deleteIncident(Incident incident) async {
+    final response = await _send(
+      'DELETE',
+      _endpoint({'incidentId': incident.id, 'version': '${incident.version}'}),
+    );
+    final data = jsonDecode(response.body);
+    if (data is! Map || data['deleted'] != true) {
+      throw const CampusFixException(
+        'Revisa el listado para confirmar la eliminación.',
+      );
+    }
   }
 
   Future<void> upload({

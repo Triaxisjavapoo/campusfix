@@ -14,6 +14,9 @@ service cloud.firestore {
     }
     function incidentPath(id) { return /databases/$(database)/documents/incidents/$(id); }
     function participant(id) { return canReadIncident(get(incidentPath(id)).data); }
+    function deleting(data) { return 'deleting' in data && data.deleting == true; }
+    function writable(id) { return participant(id) && !deleting(get(incidentPath(id)).data); }
+    function deletingAsAdmin(id) { return admin() && deleting(get(incidentPath(id)).data); }
     function validUser(data) {
       return data.keys().hasAll(['name', 'email', 'role', 'active', 'createdAt', 'updatedAt']) &&
         data.keys().hasOnly(['name', 'email', 'role', 'active', 'createdAt', 'updatedAt']) &&
@@ -118,7 +121,7 @@ service cloud.firestore {
            (data.status == 'CERRADA' ? data.closedAt == request.time : data.closedAt == resource.data.closedAt)));
     }
     match /incidents/{id} {
-      allow read: if canReadIncident(resource.data);
+      allow read: if admin() || canReadIncident(resource.data);
       allow create: if active() && currentUser().role in ['reporter', 'admin'] && validIncident(request.resource.data) &&
         validCategoryReference(request.resource.data) && request.resource.data.reporterId == request.auth.uid &&
         request.resource.data.reporterName == currentUser().name && request.resource.data.status == 'REPORTADA' &&
@@ -126,16 +129,18 @@ service cloud.firestore {
         request.resource.data.resolvedAt == null && request.resource.data.closedAt == null &&
         request.resource.data.createdAt == request.time && request.resource.data.version == 1 &&
         audit(id, request.resource.data, null, 'CREATED');
-      allow update: if active() && validIncident(request.resource.data) &&
+      allow update: if (admin() && deleting(request.resource.data) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleting'])) ||
+        (active() && !deleting(resource.data) && validIncident(request.resource.data) &&
         request.resource.data.version == resource.data.version + 1 &&
         request.resource.data.lastEventId != resource.data.lastEventId &&
         ((classification() && audit(id, request.resource.data, resource.data.status, 'CLASSIFIED')) ||
          (assignment() && audit(id, request.resource.data, resource.data.status, 'ASSIGNED')) ||
-         (transition() && audit(id, request.resource.data, resource.data.status, 'STATUS_CHANGED')));
-      allow delete: if false;
+         (transition() && audit(id, request.resource.data, resource.data.status, 'STATUS_CHANGED'))));
+      allow delete: if admin() && deleting(resource.data);
       match /events/{eventId} {
         allow read: if participant(id);
-        allow create: if active() &&
+        allow create: if active() && !deleting(getAfter(incidentPath(id)).data) &&
           request.resource.data.keys().hasAll(['actorId', 'actorName', 'type', 'fromStatus', 'toStatus', 'message', 'createdAt', 'version']) &&
           request.resource.data.keys().hasOnly(['actorId', 'actorName', 'type', 'fromStatus', 'toStatus', 'message', 'createdAt', 'version']) &&
           request.resource.data.actorId == request.auth.uid && request.resource.data.actorName == currentUser().name &&
@@ -147,20 +152,22 @@ service cloud.firestore {
           ((!exists(incidentPath(id)) && request.resource.data.version == 1 && request.resource.data.fromStatus == null) ||
            (exists(incidentPath(id)) && request.resource.data.version == get(incidentPath(id)).data.version + 1 &&
             request.resource.data.fromStatus == get(incidentPath(id)).data.status));
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if deletingAsAdmin(id);
       }
       match /comments/{commentId} {
         allow read: if participant(id);
-        allow create: if participant(id) &&
+        allow create: if writable(id) &&
           request.resource.data.keys().hasAll(['authorId', 'authorName', 'text', 'createdAt']) &&
           request.resource.data.keys().hasOnly(['authorId', 'authorName', 'text', 'createdAt']) &&
           request.resource.data.authorId == request.auth.uid && request.resource.data.authorName == currentUser().name &&
           text(request.resource.data.text, 1, 2000) && request.resource.data.createdAt == request.time;
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if deletingAsAdmin(id);
       }
       match /evidence/{evidenceId} {
         allow read: if participant(id);
-        allow create: if participant(id) &&
+        allow create: if writable(id) &&
           request.resource.data.keys().hasAll(['uploaderId', 'uploaderName', 'name', 'path', 'contentType', 'size', 'createdAt']) &&
           request.resource.data.keys().hasOnly(['uploaderId', 'uploaderName', 'name', 'path', 'contentType', 'size', 'createdAt', 'storageProvider']) &&
           (!('storageProvider' in request.resource.data) || request.resource.data.storageProvider in ['firebase', 'supabase']) &&
@@ -170,7 +177,8 @@ service cloud.firestore {
           request.resource.data.contentType in ['image/jpeg', 'image/png', 'image/webp'] &&
           request.resource.data.size is int && request.resource.data.size > 0 && request.resource.data.size <= 5 * 1024 * 1024 &&
           request.resource.data.createdAt == request.time;
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if deletingAsAdmin(id);
       }
     }
     match /{document=**} { allow read, write: if false; }

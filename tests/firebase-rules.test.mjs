@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import { collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, Timestamp, updateDoc, where, writeBatch } from 'firebase/firestore';
-import { deleteObject, getBytes, ref, uploadBytes } from 'firebase/storage';
+import { deleteObject, getBytes, listAll, ref, uploadBytes } from 'firebase/storage';
 
 const projectId = 'demo-campusfix';
 let env;
@@ -228,4 +228,46 @@ test('Storage conserva imagen una vez registrados metadatos de evidencia', async
   await assertSucceeds(setDoc(doc(dbFor('reporter'), 'incidents', 'storage-immutable', 'evidence', id), { uploaderId: 'reporter', uploaderName: names.reporter, name: 'foto.webp', path, contentType: 'image/webp', size: 1, createdAt: serverTimestamp() }));
   await assertFails(deleteObject(ref(storageFor('reporter'), path)));
   await assertFails(deleteObject(ref(storageFor('admin'), path)));
+});
+
+test('solo admin elimina un reporte completo y el bloqueo impide nuevas escrituras', async () => {
+  const id = 'delete-cascade';
+  await seedIncident(id, { assignedTo: 'technician', assignedName: names.technician, status: 'ASIGNADA' });
+  const path = `incidents/${id}/reporter/image`;
+  const reporterDb = dbFor('reporter');
+  const adminDb = dbFor('admin');
+  const parent = doc(adminDb, 'incidents', id);
+  await assertSucceeds(uploadBytes(ref(storageFor('reporter'), path), new Uint8Array([1]), { contentType: 'image/png' }));
+  await assertSucceeds(setDoc(doc(reporterDb, 'incidents', id, 'evidence', 'image'), {
+    uploaderId: 'reporter', uploaderName: names.reporter, name: 'foto.png', path,
+    contentType: 'image/png', size: 1, createdAt: serverTimestamp(),
+  }));
+  await assertSucceeds(setDoc(doc(reporterDb, 'incidents', id, 'comments', 'note'), {
+    authorId: 'reporter', authorName: names.reporter, text: 'Información del reporte.', createdAt: serverTimestamp(),
+  }));
+  for (const uid of ['reporter', 'technician', 'inactive']) {
+    await assertFails(updateDoc(doc(dbFor(uid), 'incidents', id), { deleting: true }));
+    await assertFails(deleteDoc(doc(dbFor(uid), 'incidents', id)));
+  }
+  await assertFails(deleteDoc(parent));
+  await assertFails(updateDoc(parent, { deleting: true, title: 'Cambio oculto en eliminación' }));
+  await assertSucceeds(updateDoc(parent, { deleting: true }));
+  await assertFails(updateDoc(parent, { deleting: false }));
+  await assertFails(setDoc(doc(reporterDb, 'incidents', id, 'comments', 'late'), {
+    authorId: 'reporter', authorName: names.reporter, text: 'Comentario tardío.', createdAt: serverTimestamp(),
+  }));
+  await assertFails(uploadBytes(ref(storageFor('reporter'), `${path}-late`), new Uint8Array([1]), { contentType: 'image/png' }));
+  await assertFails(deleteDoc(doc(reporterDb, 'incidents', id, 'comments', 'note')));
+  await assertFails(deleteObject(ref(storageFor('technician'), path)));
+  await assertSucceeds(listAll(ref(storageFor('admin'), `incidents/${id}`)));
+  await assertFails(listAll(ref(storageFor('reporter'), `incidents/${id}`)));
+  await assertSucceeds(deleteObject(ref(storageFor('admin'), path)));
+  const batch = writeBatch(adminDb);
+  for (const [collectionName, childId] of [['evidence', 'image'], ['comments', 'note'], ['events', 'initial-event']]) {
+    batch.delete(doc(adminDb, 'incidents', id, collectionName, childId));
+  }
+  await assertSucceeds(batch.commit());
+  await assertSucceeds(deleteDoc(parent));
+  const removed = await assertSucceeds(getDoc(parent));
+  assert.equal(removed.exists(), false);
 });

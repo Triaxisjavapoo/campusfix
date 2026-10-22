@@ -198,6 +198,8 @@ class IncidentState extends ChangeNotifier {
   }) => _run(() => repository.transitionIncident(incident, next, note: note));
   Future<bool> addComment(Incident incident, String text) =>
       _run(() => repository.addComment(incident, text));
+  Future<bool> deleteIncident(Incident incident) =>
+      _run(() => repository.deleteIncident(incident));
   Future<bool> uploadEvidence(
     Incident incident, {
     required String name,

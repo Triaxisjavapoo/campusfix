@@ -12,7 +12,7 @@ CampusFix utiliza Firebase Authentication, Cloud Firestore y Firebase Hosting. C
 | Authentication | Proveedor Correo electrónico/contraseña habilitado. |
 | Administración | Cuenta inicial con rol administrador y catálogo de cinco categorías. Las credenciales se mantienen fuera del repositorio. |
 | Fotografías | Supabase Storage en producción; Cloud Storage en emuladores. `STORAGE_ENABLED=true`, `EVIDENCE_PROVIDER=supabase`. |
-| Firebase Hosting | [CampusFix 2026.10.21.4](https://campusfix-ae32e.web.app/?v=2026.10.21.4). |
+| Firebase Hosting | [CampusFix 2026.10.21.5](https://campusfix-ae32e.web.app/?v=2026.10.21.5). |
 
 El entorno de producción mantiene Authentication, Firestore y Hosting en Spark. Las imágenes se guardan en Supabase; Firestore conserva los metadatos. El entorno local conserva Cloud Storage. La [guía del entorno local](ENTORNO_LOCAL.md) describe el uso de fotografías sin activar Blaze.
 
@@ -149,7 +149,7 @@ npx firebase deploy --project campusfix-ae32e --only firestore:rules,firestore:i
 
 ### Versiones y conservación de sesiones
 
-La versión **2026.10.21.4** se identifica mediante el sello **v2026.10.21.4** abajo a la derecha y el pie de la interfaz **v1.0.4**. El acceso es [CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.4). Los recursos visuales se describen en [Identidad UCR](IDENTIDAD_UCR.md).
+La versión **2026.10.21.5** se identifica mediante el sello **v2026.10.21.5** abajo a la derecha y el pie de la interfaz **v1.0.5**. El acceso es [CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.5). Los recursos visuales se describen en [Identidad UCR](IDENTIDAD_UCR.md).
 
 En cada publicación, actualice el mismo identificador en `web/index.html` —meta, sello visible y URL del script— y `web/flutter_bootstrap.js`, junto con la versión visible del pie de la interfaz. Compile los entornos de producción y local con sus respectivas configuraciones. El enlace de publicación debe usar el identificador correspondiente.
 

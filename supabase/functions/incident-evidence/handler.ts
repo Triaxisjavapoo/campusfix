@@ -8,6 +8,10 @@ interface StorageError {
   statusCode?: string | number;
 }
 interface Storage {
+  list(path: string, options: { limit: number }): Promise<{
+    data: { id: string | null; name: string }[] | null;
+    error: StorageError | null;
+  }>;
   upload(path: string, body: Uint8Array, options: {
     contentType: string;
     upsert: boolean;
@@ -98,7 +102,11 @@ export function createEvidenceHandler(deps: Dependencies): (req: Request) => Pro
     if (!response.ok) {
       const code = response.status;
       throw new RequestError(
-        code === 401 || code === 403 || code === 404 || code === 429 ? code : 503,
+        code === 409 || code === 412
+          ? 409
+          : code === 401 || code === 403 || code === 404 || code === 429
+          ? code
+          : 503,
         "firestore_access_failed",
       );
     }
@@ -109,6 +117,76 @@ export function createEvidenceHandler(deps: Dependencies): (req: Request) => Pro
     const result = await firestore(token, path) as { fields?: Fields };
     if (!result.fields) throw new RequestError(404, "document_not_found");
     return result.fields;
+  }
+
+  async function removeStorageTree(prefix: string, depth = 0): Promise<void> {
+    if (depth > 2) throw new RequestError(503, "unexpected_storage_path");
+    // Removing the first page avoids skipping objects as the listing shrinks.
+    for (let page = 0; page < 200; page++) {
+      const { data, error } = await deps.storage.list(prefix, { limit: 100 });
+      if (error || !data) throw new RequestError(503, "storage_cleanup_failed");
+      if (!data.length) return;
+      const objects: string[] = [];
+      for (const item of data) {
+        if (!ID.test(item.name)) throw new RequestError(503, "unexpected_storage_path");
+        const path = `${prefix}/${item.name}`;
+        if (item.id === null) await removeStorageTree(path, depth + 1);
+        else objects.push(path);
+      }
+      if (objects.length) {
+        const removed = await deps.storage.remove(objects);
+        if (removed.error) throw new RequestError(503, "storage_cleanup_failed");
+      }
+    }
+    throw new RequestError(503, "retry_large_report_cleanup");
+  }
+
+  async function deleteIncident(token: string, incidentId: string, version: string): Promise<void> {
+    const path = `/incidents/${incidentId}`;
+    let current: { fields: Fields; updateTime: string };
+    try {
+      current = await firestore(token, path) as typeof current;
+    } catch (error) {
+      if (error instanceof RequestError && error.status === 404) return;
+      throw error;
+    }
+    if (!current.fields || !current.updateTime) throw new RequestError(503, "invalid_report");
+    if (current.fields.deleting?.booleanValue !== true) {
+      if (current.fields.version?.integerValue !== version) {
+        throw new RequestError(409, "report_changed");
+      }
+      // The precondition makes a stale confirmation fail before any deletion.
+      await firestore(token, ":commit", {
+        writes: [{
+          update: { name: documentRoot + path, fields: { deleting: { booleanValue: true } } },
+          updateMask: { fieldPaths: ["deleting"] },
+          currentDocument: { updateTime: current.updateTime },
+        }],
+      });
+    }
+    await removeStorageTree(`incidents/${incidentId}`);
+    for (const collection of ["evidence", "comments", "events"]) {
+      for (let page = 0;; page++) {
+        if (page >= 200) throw new RequestError(503, "retry_large_report_cleanup");
+        const result = await firestore(token, `${path}/${collection}?pageSize=100`) as {
+          documents?: { name: string }[];
+        };
+        const docs = result.documents ?? [];
+        if (!docs.length) break;
+        const prefix = `${documentRoot}${path}/${collection}/`;
+        if (
+          docs.some((doc) =>
+            !doc.name.startsWith(prefix) ||
+            !doc.name.slice(prefix.length) || doc.name.slice(prefix.length).includes("/")
+          )
+        ) {
+          throw new RequestError(503, "unexpected_document_path");
+        }
+        await firestore(token, ":commit", { writes: docs.map((doc) => ({ delete: doc.name })) });
+      }
+    }
+    // Keep the parent and its deletion lock until all related data is gone.
+    await firestore(token, ":commit", { writes: [{ delete: documentRoot + path }] });
   }
 
   return async (req: Request): Promise<Response> => {
@@ -122,7 +200,7 @@ export function createEvidenceHandler(deps: Dependencies): (req: Request) => Pro
     });
     if (allowedOrigin) {
       headers.set("Access-Control-Allow-Origin", origin!);
-      headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+      headers.set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
       headers.set(
         "Access-Control-Allow-Headers",
         "authorization, content-type, apikey, x-client-info",
@@ -135,8 +213,8 @@ export function createEvidenceHandler(deps: Dependencies): (req: Request) => Pro
       });
     if (origin && !allowedOrigin) return json(403, { error: "origin_not_allowed" });
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
-    if (req.method !== "GET" && req.method !== "POST") {
-      headers.set("Allow", "GET, POST, OPTIONS");
+    if (!["GET", "POST", "DELETE"].includes(req.method)) {
+      headers.set("Allow", "GET, POST, DELETE, OPTIONS");
       return json(405, { error: "method_not_allowed" });
     }
 
@@ -160,7 +238,16 @@ export function createEvidenceHandler(deps: Dependencies): (req: Request) => Pro
       // remain authoritative, including current role, active status and assignment.
       const profile = await document(token, `/users/${encodeURIComponent(uid)}`);
       if (profile.active?.booleanValue !== true) throw new RequestError(403, "inactive_profile");
-      await document(token, `/incidents/${incidentId}`);
+      if (req.method === "DELETE") {
+        requestStage = "delete";
+        if (profile.role?.stringValue !== "admin") throw new RequestError(403, "admin_required");
+        const version = url.searchParams.get("version") ?? "";
+        if (!/^[1-9][0-9]{0,14}$/.test(version)) throw new RequestError(400, "invalid_version");
+        await deleteIncident(token, incidentId, version);
+        return json(200, { deleted: true });
+      }
+      const incident = await document(token, `/incidents/${incidentId}`);
+      if (incident.deleting?.booleanValue === true) throw new RequestError(409, "report_deleting");
 
       if (req.method === "GET") {
         requestStage = "download";

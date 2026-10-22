@@ -13,6 +13,7 @@ abstract final class IncidentPolicy {
 
   static bool canClassify(Incident incident, UserProfile actor) =>
       actor.active &&
+      !incident.deleting &&
       actor.role == UserRole.admin &&
       const {
         IncidentStatus.reported,
@@ -23,6 +24,7 @@ abstract final class IncidentPolicy {
 
   static bool canAssign(Incident incident, UserProfile actor) =>
       actor.active &&
+      !incident.deleting &&
       actor.role == UserRole.admin &&
       const {
         IncidentStatus.reported,
@@ -32,13 +34,16 @@ abstract final class IncidentPolicy {
       }.contains(incident.status);
 
   static bool canComment(Incident incident, UserProfile actor) =>
-      canRead(incident, actor);
+      canRead(incident, actor) && !incident.deleting;
+
+  static bool canDelete(Incident incident, UserProfile actor) =>
+      actor.active && actor.role == UserRole.admin;
 
   static List<IncidentStatus> allowedTransitions(
     Incident incident,
     UserProfile actor,
   ) {
-    if (!canRead(incident, actor)) return const [];
+    if (!canRead(incident, actor) || incident.deleting) return const [];
     final status = incident.status;
     final result = <IncidentStatus>{};
     if (actor.role == UserRole.admin) {

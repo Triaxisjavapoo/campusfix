@@ -33,6 +33,10 @@ Las reglas de Firestore son la fuente de autorización. Cambiar un técnico o de
 
 La función no necesita claves privadas de Firebase. `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` son variables del entorno de ejecución de Supabase. La segunda no debe copiarse al cliente, a Git, a `firebase.config.json` ni a archivos publicados.
 
+## Eliminación de reportes
+
+La misma función acepta `DELETE` con `incidentId` y `version`. Exige un perfil Firebase activo con rol `admin`. Una versión desactualizada devuelve conflicto antes de borrar. La operación marca el reporte para eliminación, bloquea nuevas escrituras, elimina sus objetos privados y subcolecciones y retira el padre al final. El navegador muestra confirmación irreversible y permite reintentar si hubo una interrupción. Las credenciales administrativas de Supabase permanecen en el servidor.
+
 ## Configuración del cliente
 
 `firebase.config.json` incluye las opciones públicas:
