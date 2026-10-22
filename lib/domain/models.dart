@@ -255,6 +255,7 @@ class IncidentEvidence {
     required this.path,
     required this.contentType,
     required this.size,
+    this.storageProvider = 'firebase',
     this.createdAt,
   });
   final String id;
@@ -264,6 +265,7 @@ class IncidentEvidence {
   final String path;
   final String contentType;
   final int size;
+  final String storageProvider;
   final DateTime? createdAt;
   factory IncidentEvidence.fromMap(String id, Map<String, dynamic> map) =>
       IncidentEvidence(
@@ -274,6 +276,7 @@ class IncidentEvidence {
         path: map['path'] as String? ?? '',
         contentType: map['contentType'] as String? ?? '',
         size: (map['size'] as num?)?.toInt() ?? 0,
+        storageProvider: map['storageProvider'] as String? ?? 'firebase',
         createdAt: _date(map['createdAt']),
       );
 }

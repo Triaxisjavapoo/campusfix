@@ -4,9 +4,9 @@ Fuente funcional: `Proyecto_1_UCR.pdf`, IF0009 Desarrollo de Software IV, Proyec
 
 ## Alcance
 
-Gestionar el ciclo completo de una incidencia de servicio del campus: reporte, clasificación, asignación, atención, seguimiento, resolución y cierre. La aplicación tiene interfaz Flutter Web y utiliza los cuatro servicios requeridos: Firebase Authentication, Cloud Firestore, Cloud Storage y Firebase Hosting.
+Gestionar el ciclo completo de una incidencia de servicio del campus: reporte, clasificación, asignación, atención, seguimiento, resolución y cierre. La aplicación tiene interfaz Flutter Web, Firebase Authentication, Cloud Firestore y Firebase Hosting. La integración de Cloud Storage se conserva en los emuladores; las fotografías de producción utilizan Supabase Storage como alternativa sin Blaze.
 
-Las fotografías utilizan Cloud Storage y están disponibles en el entorno local con emuladores de Firebase. Su habilitación en producción está pendiente, por lo que el sitio público no permite adjuntar imágenes. La configuración de producción utiliza el plan gratuito Spark; los datos de las imágenes no se almacenan en Firestore. [CampusFix está publicado](https://campusfix-ae32e.web.app) en el proyecto `campusfix-ae32e`, con Firestore `(default)` en `us-central1` y Authentication por correo/contraseña habilitado.
+Las fotografías de producción se guardan en Supabase mediante un servicio privado que verifica la sesión Firebase y el acceso al caso. El uso de otro proveedor en producción es una desviación del requisito literal de Cloud Storage del enunciado; la demostración local conserva ese servicio con emuladores. La configuración de producción utiliza el plan gratuito Spark; los datos de las imágenes no se almacenan en Firestore. [CampusFix está publicado](https://campusfix-ae32e.web.app) en el proyecto `campusfix-ae32e`, con Firestore `(default)` en `us-central1` y Authentication por correo/contraseña habilitado.
 
 | Actor | Necesidad |
 | --- | --- |
@@ -27,7 +27,7 @@ Las pantallas están en `lib/ui/app.dart`; los controladores `AuthState`, `Incid
 | HU-03 Roles | El administrador controla las operaciones disponibles. | `UserRole` en `lib/domain/models.dart`, `IncidentPolicy`, reglas de Firestore y Storage. | Administrar una cuenta y comprobar que un reportante no obtiene funciones administrativas. |
 | HU-04 Cerrar sesión | Eliminar la sesión y volver al acceso. | Firebase Auth y estado de sesión. | Salir y comprobar que la interfaz operativa desaparece. |
 | HU-05 Crear incidencia | Generar identificación, persistir el reporte y dejarlo REPORTADA. | Creación atómica de documento y evento en el repositorio; reglas de `incidents`. | Crear un caso; comprobar ID, autor, fechas, estado y evento inicial. |
-| HU-06 Evidencia | Almacenar fotos asociadas al caso. | `firebase_storage`, metadatos de `evidence`, `storage.rules`; disponible en emuladores. Habilitación de producción pendiente. | Subir JPEG/PNG/WebP autorizado y rechazar archivo mayor a 5 MiB o acceso ajeno en emuladores. Repetir en producción cuando se habilite Storage. |
+| HU-06 Evidencia | Almacenar fotos asociadas al caso. | `supabase_evidence_client.dart`, Edge Function y bucket privado en producción; `firebase_storage` y `storage.rules` en emuladores. | Subir JPEG/PNG/WebP autorizado y rechazar archivos mayores a 5 MiB, formatos inválidos y acceso ajeno. |
 | HU-07 Mis incidencias | El reportante ve solamente sus reportes. | Consulta por `reporterId` y autorización sobre el incidente. | Crear casos con dos reportantes; comprobar aislamiento de listados y lecturas. |
 | HU-08 Detalle e historial | Mostrar estado, responsables, comentarios e historial cronológico. | Modelos y subcolecciones `events`, `comments`, `evidence`; streams del repositorio. | Abrir un caso con cambios y comparar autor, fecha y orden de sus actuaciones. |
 | HU-09 Clasificación | Registrar categoría y prioridad antes de asignar. | Política administrativa y actualización validada de categoría/prioridad. | Clasificar y comprobar que el caso y su evento reflejan ambos campos. |

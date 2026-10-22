@@ -7,13 +7,10 @@ import 'package:uuid/uuid.dart';
 
 import '../domain/incident_policy.dart';
 import '../domain/models.dart';
-
-class CampusFixException implements Exception {
-  const CampusFixException(this.message);
-  final String message;
-  @override
-  String toString() => message;
-}
+import 'campusfix_exception.dart';
+import 'evidence_config.dart';
+import 'supabase_evidence_client.dart';
+export 'campusfix_exception.dart';
 
 /// Production Firebase access. No fake database, hardcoded accounts, or public
 /// download URLs: emulator and production use the same authenticated operations.
@@ -29,6 +26,7 @@ class FirebaseRepository {
   final FirebaseAuth auth;
   final FirebaseFirestore firestore;
   final FirebaseStorage storage;
+  late final _supabaseEvidence = SupabaseEvidenceClient(auth);
   static const maxEvidenceBytes = 5 * 1024 * 1024;
   static const allowedEvidenceTypes = {'image/jpeg', 'image/png', 'image/webp'};
   final _uuid = const Uuid();
@@ -448,6 +446,11 @@ class FirebaseRepository {
     required String contentType,
   }) async {
     _length(name, 'El nombre de archivo', 1, 180);
+    if (!EvidenceConfig.enabled) {
+      throw const CampusFixException(
+        'La carga de fotografías no está habilitada.',
+      );
+    }
     if (bytes.isEmpty || bytes.length > maxEvidenceBytes) {
       throw const CampusFixException(
         'Cada imagen debe pesar entre 1 byte y 5 MB.',
@@ -462,6 +465,15 @@ class FirebaseRepository {
     final actor = await _actor();
     if (!IncidentPolicy.canComment(incident, actor)) {
       throw const CampusFixException('No tienes acceso a esta incidencia.');
+    }
+    if (EvidenceConfig.provider == 'supabase') {
+      await _supabaseEvidence.upload(
+        incidentId: incident.id,
+        name: name.trim(),
+        bytes: bytes,
+        contentType: contentType,
+      );
+      return;
     }
     final id = _uuid.v4();
     final path = 'incidents/${incident.id}/${actor.uid}/$id';
@@ -522,7 +534,9 @@ class FirebaseRepository {
   }
 
   Future<Uint8List?> evidenceBytes(IncidentEvidence evidence) =>
-      storage.ref(evidence.path).getData(maxEvidenceBytes);
+      evidence.storageProvider == 'supabase'
+      ? _supabaseEvidence.download(evidence)
+      : storage.ref(evidence.path).getData(maxEvidenceBytes);
 
   Future<void> saveCategory({
     String? id,

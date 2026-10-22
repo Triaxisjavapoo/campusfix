@@ -7,15 +7,13 @@ import '../domain/models.dart';
 import '../domain/incident_policy.dart';
 import '../domain/dashboard_metrics.dart';
 import '../state/app_state.dart';
+import '../data/evidence_config.dart';
 
 import 'ucr_branding.dart';
 export 'ucr_branding.dart' show campusTheme;
 
 const emulatorMode = bool.fromEnvironment('USE_EMULATORS');
-const storageReady = bool.fromEnvironment(
-  'STORAGE_ENABLED',
-  defaultValue: false,
-);
+const storageReady = EvidenceConfig.enabled;
 
 String date(DateTime? value) => value == null
     ? 'Sincronizando…'
@@ -775,7 +773,7 @@ class Overview extends StatelessWidget {
           IncidentTable(items: latest, open: open),
         gap(24),
         Text(
-          'CampusFix · Proyecto académico · UCR, Sede del Sur · v1.0.3',
+          'CampusFix · Proyecto académico · UCR, Sede del Sur · v1.0.4',
           style: TextStyle(
             fontSize: 11,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -1937,7 +1935,7 @@ class _IncidentDetailState extends State<IncidentDetail> {
               gap(16),
               if (!emulatorMode && !storageReady) ...[
                 const Notice(
-                  'Las fotografías están pendientes en producción: este proyecto utiliza el plan gratuito Spark. En los emuladores puedes probar Cloud Storage completo.',
+                  'La carga de fotografías aún no está habilitada. Contacta al administrador.',
                 ),
                 gap(),
               ],

@@ -2,13 +2,13 @@
 
 ## Acceso al sitio
 
-[Abrir CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.3).
+[Abrir CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.4).
 
 El acceso utiliza correo electrónico y contraseña. Las cuentas nuevas tienen el rol de reportante. La administración asigna los roles del personal desde **Usuarios y roles** y gestiona el catálogo desde **Categorías**.
 
 Las credenciales administrativas se mantienen fuera del repositorio. En **Mi perfil → Cambiar mi contraseña** se puede solicitar el enlace de recuperación.
 
-Authentication, Firestore y Hosting están activos en el plan Spark. Las fotografías están disponibles con los emuladores locales; en producción requieren habilitar Cloud Storage.
+Authentication, Firestore y Hosting están activos en el plan Spark. Las fotografías de producción utilizan Supabase Storage privado. En el detalle de una incidencia, **Fotografías y evidencias → Adjuntar** permite seleccionar JPEG, PNG o WebP de hasta 5 MiB. La demostración local conserva Cloud Storage con emuladores.
 
 ## Ejecución local
 
@@ -40,6 +40,7 @@ Estas cuentas pertenecen únicamente a los emuladores y no permiten entrar al si
 ## Documentación
 
 - [Manual de usuario](docs/MANUAL_USUARIO.md): operación de cada rol.
+- [Fotografías con Supabase](docs/SUPABASE.md): almacenamiento privado y configuración.
 - [Firebase y publicación](docs/FIREBASE.md): servicios, seguridad y despliegue.
 - [Entorno local](docs/ENTORNO_LOCAL.md): emuladores y modo de desarrollo.
 - [Paquetes](docs/PAQUETES.md): dependencias y funcionamiento.

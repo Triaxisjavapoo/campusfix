@@ -17,6 +17,7 @@ dependencies:
   intl: ^0.20.2
   file_picker: ^10.3.0
   uuid: ^4.5.1
+  http: ^1.6.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

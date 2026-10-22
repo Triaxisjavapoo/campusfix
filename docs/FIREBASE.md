@@ -1,6 +1,6 @@
 # Configuración de Firebase y publicación
 
-CampusFix utiliza Firebase Authentication, Cloud Firestore y Firebase Hosting. Cloud Storage está disponible en el entorno local; su habilitación en producción requiere una cuenta de facturación. Ejecute los comandos de esta guía desde la raíz del proyecto. `SU_PROJECT_ID` representa el ID del proyecto, distinto de su nombre visible y del identificador de la aplicación web.
+CampusFix utiliza Firebase Authentication, Cloud Firestore y Firebase Hosting. Cloud Storage está disponible en el entorno local. Las fotografías de producción utilizan Supabase Storage privado, descrito en [Fotografías con Supabase](SUPABASE.md). Ejecute los comandos de esta guía desde la raíz del proyecto. `SU_PROJECT_ID` representa el ID del proyecto, distinto de su nombre visible y del identificador de la aplicación web.
 
 ## Configuración actual
 
@@ -11,10 +11,10 @@ CampusFix utiliza Firebase Authentication, Cloud Firestore y Firebase Hosting. C
 | Cloud Firestore | Base `(default)` en `us-central1`, con seis índices definidos en `firestore.indexes.json`. |
 | Authentication | Proveedor Correo electrónico/contraseña habilitado. |
 | Administración | Cuenta inicial con rol administrador y catálogo de cinco categorías. Las credenciales se mantienen fuera del repositorio. |
-| Cloud Storage | Disponible con los emuladores; deshabilitado en producción mediante `STORAGE_ENABLED=false`. |
-| Firebase Hosting | [CampusFix 2026.10.21.3](https://campusfix-ae32e.web.app/?v=2026.10.21.3). |
+| Fotografías | Supabase Storage en producción; Cloud Storage en emuladores. `STORAGE_ENABLED=true`, `EVIDENCE_PROVIDER=supabase`. |
+| Firebase Hosting | [CampusFix 2026.10.21.4](https://campusfix-ae32e.web.app/?v=2026.10.21.4). |
 
-El entorno de producción mantiene los servicios disponibles en Spark. Las imágenes permanecen asociadas a Cloud Storage en la arquitectura y no se almacenan como archivos dentro de documentos Firestore. La [guía del entorno local](ENTORNO_LOCAL.md) describe el uso de fotografías sin activar Blaze.
+El entorno de producción mantiene Authentication, Firestore y Hosting en Spark. Las imágenes se guardan en Supabase; Firestore conserva los metadatos. El entorno local conserva Cloud Storage. La [guía del entorno local](ENTORNO_LOCAL.md) describe el uso de fotografías sin activar Blaze.
 
 ## 1. Herramientas y proyecto
 
@@ -84,19 +84,23 @@ npx firebase deploy --project SU_PROJECT_ID --only firestore:rules,firestore:ind
 
 Los índices deben finalizar su construcción antes de utilizar las consultas correspondientes. Las consultas deben respetar el alcance de acceso; las reglas no transforman una consulta amplia en un filtro de seguridad. [Condiciones y consultas seguras](https://firebase.google.com/docs/firestore/security/rules-conditions#rules_are_not_filters).
 
-## 5. Cloud Storage: fotografías privadas
+## 5. Proveedores de fotografías
 
-El emulador de Cloud Storage utiliza el proyecto local `demo-campusfix` y permite cargar y consultar fotografías sin facturación. En producción, la función permanece deshabilitada.
+La producción utiliza Supabase con la configuración de [Fotografías con Supabase](SUPABASE.md). La Edge Function debe estar publicada y las reglas de Firestore deben admitir el campo opcional `storageProvider`. No se requiere Firebase Cloud Functions ni Blaze para esta integración.
+
+### Cloud Storage en emuladores y habilitación opcional
+
+El emulador de Cloud Storage utiliza el proyecto local `demo-campusfix` y permite cargar y consultar fotografías sin facturación. El proveedor Cloud Storage permanece deshabilitado en producción; Supabase cubre esa función.
 
 A fecha del **21 de octubre de 2026**, Firebase exige el plan **Blaze** para utilizar Cloud Storage, incluidos buckets existentes. Aunque existen cuotas sin costo, Blaze requiere una cuenta de facturación vinculada. [Requisito de facturación de Storage](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024).
 
 Las evidencias se almacenan bajo `incidents/{incidentId}/{uid}/{uuid}`. Se admiten imágenes JPEG, PNG o WebP de hasta **5 MiB por archivo**. Firestore conserva los metadatos y la ruta; la visualización solicita los bytes mediante el SDK autenticado. La aplicación no publica enlaces permanentes de descarga.
 
-Para habilitar el servicio en producción:
+Para cambiar el proveedor de producción a Cloud Storage:
 
 1. Vincule Blaze y cree el bucket desde Firebase Console.
 2. Copie su nombre real en `FIREBASE_STORAGE_BUCKET`.
-3. Cambie `STORAGE_ENABLED` a `true` y mantenga `USE_EMULATORS` en `false`.
+3. Establezca `STORAGE_ENABLED=true`, `EVIDENCE_PROVIDER=firebase` y `USE_EMULATORS=false`. Las evidencias ya guardadas en Supabase mantienen su proveedor y requieren conservar el servicio de lectura correspondiente.
 4. Aplique `storage.cors.json` al bucket y publique las reglas.
 5. Compile y publique el cliente actualizado.
 
@@ -141,11 +145,11 @@ flutter build web --release --dart-define-from-file=firebase.config.json
 npx firebase deploy --project campusfix-ae32e --only firestore:rules,firestore:indexes,hosting
 ```
 
-`firebase.json` publica `build/web` y redirige las rutas de la aplicación a `index.html`. El comando omite Storage mientras ese servicio permanezca deshabilitado en producción. La CLI muestra la dirección de Hosting y Firebase Console conserva las versiones desplegadas. [Publicación de Hosting](https://firebase.google.com/docs/hosting/quickstart#deploy).
+`firebase.json` publica `build/web` y redirige las rutas de la aplicación a `index.html`. El comando omite Cloud Storage porque las fotos de producción utilizan Supabase. La función de Supabase se publica por separado como indica su guía. La CLI muestra la dirección de Hosting y Firebase Console conserva las versiones desplegadas. [Publicación de Hosting](https://firebase.google.com/docs/hosting/quickstart#deploy).
 
 ### Versiones y conservación de sesiones
 
-La versión **2026.10.21.3** se identifica mediante el sello **v2026.10.21.3** abajo a la derecha y el pie de la interfaz **v1.0.3**. El acceso es [CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.3). Los recursos visuales se describen en [Identidad UCR](IDENTIDAD_UCR.md).
+La versión **2026.10.21.4** se identifica mediante el sello **v2026.10.21.4** abajo a la derecha y el pie de la interfaz **v1.0.4**. El acceso es [CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.4). Los recursos visuales se describen en [Identidad UCR](IDENTIDAD_UCR.md).
 
 En cada publicación, actualice el mismo identificador en `web/index.html` —meta, sello visible y URL del script— y `web/flutter_bootstrap.js`, junto con la versión visible del pie de la interfaz. Compile los entornos de producción y local con sus respectivas configuraciones. El enlace de publicación debe usar el identificador correspondiente.
 
@@ -159,4 +163,4 @@ Para recibir una publicación, abra el enlace versionado y revise sus sellos. La
 
 Un reportante registra una incidencia. El administrador la clasifica y asigna a un técnico; este inicia la atención, registra avances y documenta la solución. El administrador cierra el caso resuelto. El historial conserva autor y fecha, y los cambios se reflejan mediante las suscripciones de Firestore.
 
-Cada rol conserva su alcance: el reportante accede a sus incidencias, el técnico a sus asignaciones y el administrador a la supervisión general. La carga y consulta de fotografías están disponibles en el [entorno local](ENTORNO_LOCAL.md); su uso en producción depende de completar la habilitación de Storage descrita en esta guía.
+Cada rol conserva su alcance: el reportante accede a sus incidencias, el técnico a sus asignaciones y el administrador a la supervisión general. La carga y consulta de fotografías utilizan [Supabase en producción](SUPABASE.md) y Cloud Storage en el [entorno local](ENTORNO_LOCAL.md), con acceso restringido a los participantes del reporte.

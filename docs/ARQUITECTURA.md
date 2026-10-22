@@ -12,7 +12,11 @@ flowchart TD
   S --> R[Servicios Firebase]
   R --> A[Firebase Authentication]
   R --> F[Cloud Firestore]
-  R --> B[Cloud Storage]
+  R --> E[Edge Function de fotografías]
+  E --> A
+  E --> F
+  E --> P[Supabase Storage privado]
+  R --> B[Cloud Storage en emuladores]
   F --> RF[Reglas de Firestore]
   B --> RB[Reglas de Storage]
   H[Firebase Hosting] --> UI
@@ -21,7 +25,7 @@ flowchart TD
   ADM --> F
 ```
 
-Hosting sirve la aplicación compilada; no procesa las reglas de negocio. El cliente habla con Authentication, Firestore y Storage mediante sus SDK oficiales. Las reglas validan las operaciones independientemente de los controles visibles en pantalla. Los scripts administrativos se ejecutan fuera del navegador.
+Hosting sirve la aplicación compilada; no procesa las reglas de negocio. El cliente utiliza los SDK de Authentication y Firestore. Las fotografías de producción pasan por una Edge Function de Supabase; las locales utilizan el SDK de Cloud Storage. Las reglas validan las operaciones independientemente de los controles visibles en pantalla. Los scripts administrativos se ejecutan fuera del navegador.
 
 ## Separación de responsabilidades
 
@@ -30,7 +34,8 @@ Hosting sirve la aplicación compilada; no procesa las reglas de negocio. El cli
 | Interfaz | `lib/ui/app.dart`: navegación, formularios validados, presentación de listados, detalle, tableros y estados de carga/error. |
 | Estado | `lib/state/`: sesión y perfil, suscripciones, filtros, selección y notificaciones a widgets mediante Provider. |
 | Dominio | Perfiles, categorías, incidentes, prioridades, estados, transiciones y cálculo de indicadores. |
-| Servicios | `lib/data/firebase_repository.dart`: consultas y escrituras Firestore, transacciones, autenticación y carga/lectura de imágenes. |
+| Servicios | `lib/data/firebase_repository.dart`: autenticación, Firestore y selección del proveedor de fotos. `supabase_evidence_client.dart`: solicitudes HTTPS de evidencia. |
+| Fotografías de producción | `supabase/functions/incident-evidence/`: validación de sesión Firebase, permisos de Firestore y objetos privados. |
 | Seguridad | Reglas de Firestore/Storage, perfiles activos, participantes y campos permitidos. |
 
 Los modelos están en `lib/domain/models.dart`; la política del flujo en `lib/domain/incident_policy.dart`; los indicadores en `lib/domain/dashboard_metrics.dart`. La inicialización está en `lib/main.dart`. La matriz de [Requisitos](REQUISITOS.md) identifica los puntos de implementación de cada historia.
@@ -86,7 +91,7 @@ Cada cambio operativo incrementa `version` y asocia `lastEventId` a un evento. S
 
 Los permisos parten del perfil persistido en Firestore. Registrar una cuenta solo crea rol reportante. La promoción inicial a administrador requiere un script con Admin SDK; las promociones siguientes se hacen con un administrador existente. Un perfil inactivo pierde acceso operativo aunque exista una sesión de Authentication.
 
-Las fotos se guardan en `incidents/{incidentId}/{uid}/{uuid}`. Storage verifica sesión, perfil y acceso al caso, además de tamaño y tipo MIME. El servicio conserva la ruta del objeto y obtiene sus bytes con autorización para mostrarlos. El tamaño máximo de 5 MiB se comprueba tanto en el cliente como en reglas. El MIME es una validación de metadatos, no un análisis de contenido de la imagen.
+Las fotos se guardan en `incidents/{incidentId}/{uid}/{uuid}`. En producción, una Edge Function verifica criptográficamente el token Firebase y consulta el perfil y el caso mediante REST con ese mismo token. Las reglas de Firestore vuelven a comprobar el perfil activo, el rol y la asignación. La función guarda el archivo en un bucket privado y escribe sus metadatos con fecha del servidor; una escritura rechazada compensa la carga. Las lecturas vuelven a autorizarse y no producen enlaces públicos permanentes. El cliente y el servidor limitan el tamaño a 5 MiB y verifican tipo y firma de archivo. Esto no sustituye un análisis completo de contenido. Los metadatos nuevos incluyen `storageProvider=supabase`; los antiguos sin ese campo se interpretan como Firebase. El entorno local conserva las reglas y operaciones de Cloud Storage.
 
 ## Tiempo real y consultas
 
@@ -98,6 +103,6 @@ El reportante consulta por creador y el técnico por responsable; así, sus cons
 
 En desarrollo se utilizan los emuladores reales de Auth, Firestore y Storage con el proyecto local `demo-campusfix`. El modo de emuladores se activa durante la compilación. En producción se usan los identificadores reales del proyecto con ese modo desactivado. Los scripts de semilla comprueban el entorno para no cargar cuentas de demostración en producción.
 
-El proyecto de producción es `campusfix-ae32e`, con Firestore `(default)` en `us-central1` y la aplicación web `1:550971519365:web:eec2c84880e516433454ec`. Authentication por correo/contraseña está habilitado. El sitio publicado es [CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.3). El plan Spark cubre la configuración actual de Authentication, Firestore y Hosting. Cloud Storage permanece deshabilitado en producción y está disponible con los emuladores sin activar Blaze. La arquitectura conserva ese servicio; las imágenes no se trasladan a documentos Firestore. `STORAGE_ENABLED=false` oculta la acción para adjuntar en producción y muestra el aviso correspondiente. La [guía del entorno local](ENTORNO_LOCAL.md) describe el uso local de fotografías.
+El proyecto de producción es `campusfix-ae32e`, con Firestore `(default)` en `us-central1` y la aplicación web `1:550971519365:web:eec2c84880e516433454ec`. Authentication por correo/contraseña está habilitado. El sitio publicado es [CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.4). El plan Spark cubre la configuración actual de Authentication, Firestore y Hosting. Supabase Storage gestiona las fotos de producción con `STORAGE_ENABLED=true` y `EVIDENCE_PROVIDER=supabase`. El proyecto Supabase es `kpwpiqaxhcnkjtdgadue`, en `us-east-1`. Cloud Storage permanece disponible con los emuladores. Las imágenes no se trasladan a documentos Firestore. La [guía de Supabase](SUPABASE.md) describe la configuración y los límites gratuitos. La [guía del entorno local](ENTORNO_LOCAL.md) describe el uso local de fotografías.
 
 Las versiones resueltas se conservan en los archivos de bloqueo. Las reglas e índices se versionan con el código y se despliegan desde el mismo paquete. La guía de [Firebase y publicación](FIREBASE.md) describe la configuración del proyecto, la administración inicial y el despliegue.

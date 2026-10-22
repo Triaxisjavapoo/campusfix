@@ -2,7 +2,7 @@
 
 CampusFix centraliza el reporte, atención y cierre de incidencias del campus. Abra [CampusFix](https://campusfix-ae32e.web.app). Puede trabajar desde un navegador de escritorio o una tablet con conexión a Internet.
 
-**Alcance actual:** el acceso por correo/contraseña está habilitado y el catálogo inicial contiene cinco categorías. El administrador gestiona las cuentas y sus roles. Las fotografías funcionan en el entorno local con los emuladores de Firebase. En producción quedan pendientes hasta habilitar Cloud Storage; el sitio muestra un aviso y no ofrece el botón **Adjuntar**. Las cuentas del entorno local no pertenecen al sitio público.
+**Alcance actual:** el acceso por correo/contraseña está habilitado y el catálogo inicial contiene cinco categorías. El administrador gestiona las cuentas y sus roles. Las fotografías están disponibles en producción mediante Supabase Storage privado y, en el entorno local, mediante los emuladores de Firebase. Las cuentas del entorno local no pertenecen al sitio público.
 
 ## Acceso y perfil
 
@@ -19,7 +19,7 @@ Si recibe un mensaje de cuenta inactiva, contacte a la administración del campu
 2. Escriba un título breve y una descripción que permita entender el problema. Indique una ubicación concreta, por ejemplo edificio, piso y aula.
 3. Seleccione la categoría y la prioridad disponibles. La administración puede ajustar la clasificación durante la revisión.
 4. Guarde. El caso recibe un número visible y comienza en **Reportada**.
-5. Abra el detalle para agregar comentarios. En la demostración con emuladores, use **Adjuntar** en **Fotografías y evidencias** para subir JPEG, PNG o WebP de hasta 5 MiB por archivo. En producción verá el aviso de fotografías pendientes.
+5. Abra el detalle para agregar comentarios. Use **Adjuntar** en **Fotografías y evidencias** para subir JPEG, PNG o WebP de hasta 5 MiB por archivo. Espere el mensaje **Fotografía guardada**; pulse la miniatura para ampliar la imagen. Solo pueden consultarla los participantes autorizados del caso y la administración.
 6. En **Mis incidencias**, busque el caso por número o texto, o use la categoría y el estado. La lista del reportante contiene sus propios reportes.
 
 En el detalle aparecen el estado actual, la persona responsable, los comentarios, las fotografías y el historial. Las actuaciones incluyen autor y fecha y llegan mediante la actualización en tiempo real; espere la confirmación de guardado antes de cerrar el formulario.

@@ -198,6 +198,10 @@ test('metadatos evidencia validan ruta, formato, tamaño y autor; no se borran',
   await assertFails(setDoc(evidence, { ...data, path: 'incidents/incident-2/reporter/image' }));
   await assertFails(setDoc(evidence, { ...data, contentType: 'text/html' }));
   await assertFails(setDoc(evidence, { ...data, size: 5 * 1024 * 1024 + 1 }));
+  await assertFails(setDoc(evidence, { ...data, storageProvider: 'public-url' }));
+  const externalEvidence = doc(dbFor('reporter'), 'incidents', 'incident-1', 'evidence', 'supabase-image');
+  await assertSucceeds(setDoc(externalEvidence, { ...data, path: 'incidents/incident-1/reporter/supabase-image', storageProvider: 'supabase' }));
+  await assertFails(getDoc(doc(dbFor('other'), 'incidents', 'incident-1', 'evidence', 'supabase-image')));
   await assertSucceeds(setDoc(evidence, data));
   await assertFails(deleteDoc(evidence));
 });

@@ -2,31 +2,32 @@
 
 Aplicación Flutter Web para la gestión de incidencias y solicitudes de servicio de la Universidad de Costa Rica, Sede del Sur. Forma parte del Proyecto Integrador 1 de IF0009, II Ciclo 2026.
 
-[Abrir CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.3)
+[Abrir CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.4)
 
 ## Funciones principales
 
 - Registro e inicio de sesión por correo electrónico y contraseña.
 - Reportes con descripción, ubicación, categoría y prioridad.
 - Asignación de responsables y seguimiento del ciclo de atención.
-- Comentarios, historial de cambios e indicadores del campus.
+- Fotografías privadas, comentarios, historial de cambios e indicadores del campus.
 - Administración de categorías, usuarios y roles.
 - Interfaz con identidad visual UCR y temas claro y oscuro.
 
 Los roles disponibles son reportante, técnico y administrador. Cada cuenta accede a las operaciones y los reportes correspondientes a su rol.
 
-## Servicios de Firebase
+## Servicios
 
 | Servicio | Función |
 | --- | --- |
 | Authentication | Registro, acceso, cierre de sesión y recuperación de contraseña. |
 | Cloud Firestore | Perfiles, incidencias, categorías, comentarios, historial y actualización en tiempo real. |
-| Cloud Storage | Almacenamiento privado de fotografías asociadas a las incidencias. |
+| Supabase Storage | Fotografías privadas en producción, con autorización mediante una Edge Function y las reglas de Firestore. |
+| Cloud Storage | Fotografías en el entorno de emuladores de Firebase. |
 | Hosting | Publicación de la aplicación web. |
 
 El proyecto de producción es `campusfix-ae32e`, con Firestore `(default)` en `us-central1`. Authentication, Firestore y Hosting están activos en el plan Spark.
 
-Las fotografías están disponibles en el entorno local mediante el emulador de Cloud Storage. En producción, Storage permanece deshabilitado y la interfaz muestra esta limitación. Su habilitación requiere configurar el bucket y la facturación correspondiente; el procedimiento está en [Firebase y publicación](docs/FIREBASE.md).
+En producción las fotografías se almacenan en Supabase, con el plan gratuito y sin activar Blaze. Firebase conserva las cuentas, los reportes y la publicación web. El entorno local mantiene Cloud Storage mediante emuladores. Esta alternativa cambia el proveedor de fotografías en producción respecto al requisito de Cloud Storage del enunciado. Configuración y límites en [Fotografías con Supabase](docs/SUPABASE.md).
 
 ## Ejecutar localmente
 
@@ -64,6 +65,7 @@ npx firebase deploy --project campusfix-ae32e --only firestore:rules,firestore:i
 | [Requisitos](docs/REQUISITOS.md) | Historias HU-01 a HU-20 y alcance funcional. |
 | [Arquitectura](docs/ARQUITECTURA.md) | Capas, modelo de datos, estados y permisos. |
 | [Manual de usuario](docs/MANUAL_USUARIO.md) | Operación del reportante, técnico y administrador. |
+| [Fotografías con Supabase](docs/SUPABASE.md) | Almacenamiento privado, autorización, límites y despliegue. |
 | [Firebase y publicación](docs/FIREBASE.md) | Configuración de servicios, reglas y despliegue. |
 | [Entorno local](docs/ENTORNO_LOCAL.md) | Emuladores, cuentas de demostración y desarrollo. |
 | [Paquetes](docs/PAQUETES.md) | Dependencias y su función en la aplicación. |

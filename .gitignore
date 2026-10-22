@@ -58,3 +58,5 @@ service-account*.json
 !.env.example
 ACCESO_INICIAL*
 *firebase-adminsdk*.json
+supabase/.temp/
+supabase/.branches/

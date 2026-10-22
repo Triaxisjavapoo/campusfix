@@ -162,7 +162,8 @@ service cloud.firestore {
         allow read: if participant(id);
         allow create: if participant(id) &&
           request.resource.data.keys().hasAll(['uploaderId', 'uploaderName', 'name', 'path', 'contentType', 'size', 'createdAt']) &&
-          request.resource.data.keys().hasOnly(['uploaderId', 'uploaderName', 'name', 'path', 'contentType', 'size', 'createdAt']) &&
+          request.resource.data.keys().hasOnly(['uploaderId', 'uploaderName', 'name', 'path', 'contentType', 'size', 'createdAt', 'storageProvider']) &&
+          (!('storageProvider' in request.resource.data) || request.resource.data.storageProvider in ['firebase', 'supabase']) &&
           request.resource.data.uploaderId == request.auth.uid && request.resource.data.uploaderName == currentUser().name &&
           text(request.resource.data.name, 1, 180) &&
           request.resource.data.path == 'incidents/' + id + '/' + request.auth.uid + '/' + evidenceId &&
