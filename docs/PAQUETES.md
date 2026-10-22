@@ -1,12 +1,12 @@
 # Paquetes utilizados y funcionamiento
 
-Las dependencias directas se declaran en `pubspec.yaml` y `package.json`. Las versiones exactas que se resuelven para esta entrega aparecen en `pubspec.lock` y `package-lock.json`; use `flutter pub get` y `npm ci` para reproducirlas. Las dependencias transitivas las descargan los gestores a partir de esos archivos de bloqueo.
+Las dependencias directas se declaran en `pubspec.yaml` y `package.json`. Las versiones exactas aparecen en `pubspec.lock` y `package-lock.json`; `flutter pub get` y `npm ci` instalan las dependencias correspondientes. Los gestores resuelven las dependencias transitivas a partir de esos archivos de bloqueo.
 
-Se conserva `firebase_storage` como integración de fotografías. El usuario decidió demostrarla gratis en emuladores y dejar pendiente su habilitación en producción; no se añadió un almacenamiento alternativo de imágenes en Firestore.
+`firebase_storage` integra las fotografías con Cloud Storage. Esta función está disponible en los emuladores de Firebase y su habilitación en producción está pendiente. Las imágenes no se almacenan en Firestore.
 
-## Versiones de la entrega
+## Versiones
 
-Valores comprobados en los archivos de bloqueo:
+Versiones registradas en los archivos de bloqueo:
 
 | Paquete | Versión |
 | --- | --- |
@@ -21,10 +21,9 @@ Valores comprobados en los archivos de bloqueo:
 | `flutter_lints` | 6.0.0 |
 | `firebase-admin` | 14.5.0 |
 | `firebase-tools` | 15.34.1 |
-| `@firebase/rules-unit-testing` | 6.0.0 |
-| `firebase` (JavaScript para pruebas) | 13.1.0 |
+| `firebase` (SDK JavaScript) | 13.1.0 |
 
-`flutter`, `flutter_localizations` y `flutter_test` provienen del SDK de Flutter. Node.js debe ser 24.12 o superior para las herramientas fijadas en esta entrega.
+`flutter` y `flutter_localizations` provienen del SDK de Flutter. Las herramientas Node.js requieren la versión 24.12 o superior.
 
 ## Aplicación Flutter Web
 
@@ -43,12 +42,11 @@ Valores comprobados en los archivos de bloqueo:
 
 Los SDK de Firebase para Flutter se conectan con los servicios del proyecto configurado. La elección de Firestore proporciona persistencia documental y suscripciones en tiempo real, como describe la [referencia oficial](https://firebase.google.com/docs/flutter/setup#available-plugins).
 
-## Desarrollo y pruebas Flutter
+## Desarrollo Flutter
 
 | Paquete | Función |
 | --- | --- |
-| `flutter_test` | Ejecutar pruebas de modelos, políticas, indicadores y widgets mediante `flutter test`. |
-| `flutter_lints` | Detectar problemas de estilo y prácticas de Dart con `flutter analyze`. No sustituye las pruebas funcionales. |
+| `flutter_lints` | Detectar problemas de estilo y prácticas de Dart con `flutter analyze`. |
 
 ## Herramientas Node.js
 
@@ -56,13 +54,12 @@ Los SDK de Firebase para Flutter se conectan con los servicios del proyecto conf
 | --- | --- | --- |
 | `firebase-admin` | Semilla local y promoción del primer administrador. | Es un SDK privilegiado para scripts confiables. En producción usa ADC; nunca se ejecuta como parte del cliente web. |
 | `firebase-tools` | Emuladores y despliegue. | Aporta la CLI `firebase`, lee `firebase.json` y publica reglas, índices y los archivos de Hosting. |
-| `@firebase/rules-unit-testing` | Probar las reglas de seguridad. | Crea contextos autenticados con identidades de prueba y permite comprobar operaciones aceptadas o rechazadas en los emuladores. |
-| `firebase` | Cliente JavaScript utilizado en pruebas. | Ejecuta lecturas, escrituras y subidas como un cliente sujeto a reglas, para comprobar permisos reales de cada rol. |
+| `firebase` | SDK cliente JavaScript para el entorno de emuladores. | Permite conectar clientes con Authentication, Firestore y Storage locales mediante sus respectivas interfaces. Las operaciones del cliente están sujetas a las reglas de seguridad. |
 
-`node:test` es el ejecutor de pruebas integrado de Node.js; no es un paquete adicional instalado. Los paquetes Node se usan para desarrollo, pruebas y administración, y no se publican dentro del cliente Flutter compilado.
+Los paquetes Node se utilizan en el entorno de desarrollo y administración; no se publican dentro del cliente Flutter compilado.
 
 ## Actualización en tiempo real
 
-No se agregó `web_socket_channel`, Socket.IO ni un servidor WebSocket propio. El SDK de Firestore mantiene los listeners de `snapshots()` y entrega los cambios; el estado los distribuye a la interfaz con Provider. Esto cubre la sincronización multiusuario del proyecto sin introducir otro servidor, protocolo de autorización o canal de persistencia. [Funcionamiento oficial de los listeners](https://firebase.google.com/docs/firestore/query-data/listen).
+El SDK de Firestore mantiene los listeners de `snapshots()` y entrega los cambios; el estado los distribuye a la interfaz con Provider. Esta integración proporciona la sincronización multiusuario sin un servidor WebSocket adicional. [Funcionamiento oficial de los listeners](https://firebase.google.com/docs/firestore/query-data/listen).
 
 No se usa Firebase Realtime Database: el servicio persistente escogido es **Cloud Firestore**, como solicita el enunciado. Authentication gestiona la identidad; las reglas de Firestore y Storage establecen qué puede hacer esa identidad.

@@ -1,55 +1,48 @@
-# Empezar con CampusFix
+# Inicio rápido
 
-## Sitio publicado
+## Acceso al sitio
 
-Abra https://campusfix-ae32e.web.app.
+[Abrir CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.3).
 
-La cuenta administradora es **megamack09@gmail.com**. Su contraseña inicial está en el archivo separado `ACCESO_INICIAL_CampusFix.txt` de esta entrega; no está en el código ni en el ZIP. En **Mi perfil → Cambiar mi contraseña** puede solicitar un enlace a su correo.
+El acceso utiliza correo electrónico y contraseña. Las cuentas nuevas tienen el rol de reportante. La administración asigna los roles del personal desde **Usuarios y roles** y gestiona el catálogo desde **Categorías**.
 
-Authentication, Firestore y Hosting están activos en el proyecto Spark. Hay cinco categorías listas. Registre las cuentas de su equipo y asigne sus roles en **Usuarios y roles**.
+Las credenciales administrativas se mantienen fuera del repositorio. En **Mi perfil → Cambiar mi contraseña** se puede solicitar el enlace de recuperación.
 
-**Fotografías:** por decisión acordada, Cloud Storage se conserva y se demuestra en emuladores gratis. La carga de fotos en el sitio público queda pendiente de activar Storage mediante Blaze. El resto del flujo está publicado.
+Authentication, Firestore y Hosting están activos en el plan Spark. Las fotografías están disponibles con los emuladores locales; en producción requieren habilitar Cloud Storage.
 
-## Demostración gratuita completa, incluidas fotografías
+## Ejecución local
 
-Requisitos: Node.js **24.12 o superior**, Java **JDK 21 o superior** y conexión a Internet para instalar dependencias y descargar los emuladores la primera vez. No necesita vincular una tarjeta ni usar un proyecto de pago.
+Requisitos: Flutter estable, Node.js **24.12 o superior** y Java/JDK **21 o superior**. La instalación inicial requiere conexión a Internet para obtener las dependencias y los emuladores.
 
-1. Extraiga `CampusFix_entrega.zip`.
-2. En Windows, abra `iniciar-demo.cmd` dentro de la carpeta `campusfix`. Instala dependencias locales si faltan y arranca los emuladores.
-3. Abra **http://127.0.0.1:5000** cuando la terminal anuncie que la demostración está lista.
-
-Alternativa desde una terminal en la carpeta del proyecto:
-
-```powershell
-npm ci
-npm run demo
-```
-
-La entrega incluye el cliente ya compilado en `build/emulator-web`. Si cambia el código, vuelva a construirlo antes de demostrarlo:
-
-Si obtuvo el proyecto clonándolo desde GitHub, esa compilación no está incluida en el repositorio. Ejecute también los comandos siguientes antes de `npm run demo`:
+Desde la carpeta `campusfix`:
 
 ```powershell
 flutter pub get
+npm ci
 flutter build web --release --dart-define-from-file=firebase.emulators.json --output build/emulator-web
+npm run demo
 ```
+
+Abrir **http://127.0.0.1:5000** cuando el entorno esté disponible. En Windows, `iniciar-demo.cmd` permite arrancar la demostración si `build/emulator-web` ya contiene el cliente compilado.
+
+## Cuentas de demostración
 
 | Rol | Correo local | Contraseña local |
 | --- | --- | --- |
-| Administrador | admin@campusfix.local | CampusFix2026! |
-| Técnico | tecnico@campusfix.local | CampusFix2026! |
-| Reportante | reporter@campusfix.local | CampusFix2026! |
+| Administrador | `admin@campusfix.local` | `CampusFix2026!` |
+| Técnico | `tecnico@campusfix.local` | `CampusFix2026!` |
+| Reportante | `reporter@campusfix.local` | `CampusFix2026!` |
 
-Son cuentas exclusivas de los emuladores. Los datos locales no se envían al proyecto publicado. Ctrl+C detiene la demostración. La semilla se prepara al arrancar; el entorno es desechable y no persiste datos entre arranques.
+Estas cuentas pertenecen únicamente a los emuladores y no permiten entrar al sitio de producción. La demostración incluye categorías e incidencias de ejemplo con historial.
 
-## Código, manuales y pruebas
+`Ctrl+C` detiene el entorno. Los datos locales se reinician en cada arranque, salvo que se configure su exportación e importación.
 
-- `README.md`: instalación y comandos.
-- `docs/MANUAL_USUARIO.md`: uso de cada rol.
-- `docs/PAQUETES.md`: paquetes y funcionamiento.
-- `docs/FIREBASE.md`: configuración, seguridad y publicación.
-- `docs/REQUISITOS.md`: cobertura de HU-01 a HU-20 y alcance acordado.
-- `docs/ARQUITECTURA.md`: diseño y modelo de datos.
-- `docs/PRUEBAS.md`: resultados reales y sus límites.
+## Documentación
 
-El proyecto incluye un repositorio Git local con commits de aplicación, seguridad y documentación, además de las compilaciones de producción y emuladores. Los archivos `pubspec.lock` y `package-lock.json` fijan las dependencias.
+- [Manual de usuario](docs/MANUAL_USUARIO.md): operación de cada rol.
+- [Firebase y publicación](docs/FIREBASE.md): servicios, seguridad y despliegue.
+- [Entorno local](docs/ENTORNO_LOCAL.md): emuladores y modo de desarrollo.
+- [Paquetes](docs/PAQUETES.md): dependencias y funcionamiento.
+- [Requisitos](docs/REQUISITOS.md): historias de usuario y alcance funcional.
+- [Arquitectura](docs/ARQUITECTURA.md): organización y modelo de datos.
+- [Identidad UCR](docs/IDENTIDAD_UCR.md): colores y recursos gráficos.

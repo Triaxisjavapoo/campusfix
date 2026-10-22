@@ -1,74 +1,70 @@
 # CampusFix
 
-Aplicación Flutter Web para reportar, asignar y atender incidencias del campus. Corresponde al Proyecto Integrador 1 de IF0009, Universidad de Costa Rica, Sede del Sur, II Ciclo 2026.
+Aplicación Flutter Web para la gestión de incidencias y solicitudes de servicio de la Universidad de Costa Rica, Sede del Sur. Forma parte del Proyecto Integrador 1 de IF0009, II Ciclo 2026.
 
-Utiliza Firebase Authentication para las cuentas, Cloud Firestore para los datos y el seguimiento en tiempo real, Cloud Storage para fotografías privadas y Firebase Hosting para publicar el cliente web. Incluye tres roles: reportante, técnico y administrador.
+[Abrir CampusFix](https://campusfix-ae32e.web.app/?v=2026.10.21.3)
 
-**Acceso a CampusFix:** [Abrir CampusFix 2026.10.21.3](https://campusfix-ae32e.web.app/?v=2026.10.21.3). La actualización visual UCR está publicada y comprobada en el navegador. Los resultados y su alcance están en [Pruebas](docs/PRUEBAS.md). Authentication por correo/contraseña está habilitado; el proyecto `campusfix-ae32e` tiene Firestore `(default)` en `us-central1`, cinco categorías y una cuenta administradora inicial. Su acceso se entrega en un archivo separado, fuera del código y del paquete compartible.
+## Funciones principales
 
-**Identidad visual UCR:** encabezado con la firma oficial PNG a color sin modificar, azul y celeste UCR, acceso ilustrado, navegación lateral renovada y una ilustración vectorial original del campus. Los recursos se incluyen localmente y no requieren paquetes nuevos. Las fuentes, colores, archivos y criterios de uso se detallan en [Identidad UCR](docs/IDENTIDAD_UCR.md).
+- Registro e inicio de sesión por correo electrónico y contraseña.
+- Reportes con descripción, ubicación, categoría y prioridad.
+- Asignación de responsables y seguimiento del ciclo de atención.
+- Comentarios, historial de cambios e indicadores del campus.
+- Administración de categorías, usuarios y roles.
+- Interfaz con identidad visual UCR y temas claro y oscuro.
 
-**Fotografías:** se conserva Cloud Storage y se demuestra gratuitamente con los emuladores reales de Firebase. Por decisión del usuario, las fotografías de producción quedan pendientes para evitar activar facturación. El sitio muestra esa limitación y no ofrece el botón de adjuntar en producción. No se reemplaza Storage con imágenes guardadas en Firestore.
+Los roles disponibles son reportante, técnico y administrador. Cada cuenta accede a las operaciones y los reportes correspondientes a su rol.
 
-## Empezar
+## Servicios de Firebase
 
-Para usar el sitio publicado, abra el enlace anterior. Para ejecutar la demostración local con las tres cuentas y fotografías, necesita Node.js **24.12 o superior** y Java/JDK **21 o superior**. Desde esta carpeta:
-
-```powershell
-npm ci
-npm run demo
-```
-
-Abra [CampusFix local](http://127.0.0.1:5000). El comando inicia Authentication, Firestore, Storage y Hosting locales, y carga las cuentas y datos de ejemplo automáticamente. La compilación de demostración está en `build/emulator-web`. Las cuentas de los tres roles están en [Pruebas](docs/PRUEBAS.md); `Ctrl+C` detiene los emuladores.
-
-Si clonó el repositorio desde GitHub, genere primero el cliente local: las carpetas `build/` y `node_modules/` no se guardan en Git. Necesita Flutter estable además de Node.js y Java:
-
-```powershell
-flutter pub get
-flutter build web --release --dart-define-from-file=firebase.emulators.json --output build/emulator-web
-npm ci
-npm run demo
-```
-
-Subir cambios a GitHub guarda el código y su historial. Para actualizar el sitio publicado, compile y despliegue también en Firebase con los comandos de la sección «Compilar para producción».
-
-Para modificar el código o repetir las pruebas Flutter, instale además Flutter estable con soporte web. Las dependencias concretas quedan registradas en `pubspec.lock` y `package-lock.json`.
-
-```powershell
-flutter pub get
-npm ci
-dart analyze lib test
-flutter test
-npm run test:cache
-```
-
-Para probar Firebase localmente, siga [la guía de emuladores y pruebas](docs/PRUEBAS.md). Para conectar su proyecto y publicar, siga [la guía completa de Firebase](docs/FIREBASE.md). La publicación requiere la configuración real de una aplicación web del proyecto y acceso autorizado a sus servicios.
-
-## Documentación
-
-| Documento | Contenido |
+| Servicio | Función |
 | --- | --- |
-| [Requisitos y trazabilidad](docs/REQUISITOS.md) | Historias HU-01 a HU-20, criterios y correspondencia con la implementación. |
-| [Arquitectura](docs/ARQUITECTURA.md) | Capas, modelo Firestore, estados, autorización y evidencia privada. |
-| [Identidad UCR](docs/IDENTIDAD_UCR.md) | Fuentes oficiales, paleta, firmas originales, integridad de archivos y aplicación visual. |
-| [Manual de usuario](docs/MANUAL_USUARIO.md) | Operación del reportante, técnico y administrador. |
-| [Firebase y publicación](docs/FIREBASE.md) | Authentication, Firestore, Storage, reglas, primer administrador y Hosting. |
-| [Paquetes](docs/PAQUETES.md) | Qué paquete se usa, para qué sirve y cómo interviene en el sistema. |
-| [Pruebas](docs/PRUEBAS.md) | Comandos reproducibles, cuentas locales y comprobaciones funcionales. |
+| Authentication | Registro, acceso, cierre de sesión y recuperación de contraseña. |
+| Cloud Firestore | Perfiles, incidencias, categorías, comentarios, historial y actualización en tiempo real. |
+| Cloud Storage | Almacenamiento privado de fotografías asociadas a las incidencias. |
+| Hosting | Publicación de la aplicación web. |
 
-## Compilar para producción
+El proyecto de producción es `campusfix-ae32e`, con Firestore `(default)` en `us-central1`. Authentication, Firestore y Hosting están activos en el plan Spark.
 
-`firebase.config.json` contiene las opciones públicas de la aplicación Firebase de esta entrega; no contiene credenciales de administrador. Si cambia de proyecto, sustituya sus valores. Para volver a publicar:
+Las fotografías están disponibles en el entorno local mediante el emulador de Cloud Storage. En producción, Storage permanece deshabilitado y la interfaz muestra esta limitación. Su habilitación requiere configurar el bucket y la facturación correspondiente; el procedimiento está en [Firebase y publicación](docs/FIREBASE.md).
+
+## Ejecutar localmente
+
+Requisitos: Flutter estable con soporte web, Node.js **24.12 o superior** y Java/JDK **21 o superior**.
+
+Desde la carpeta del proyecto:
+
+```powershell
+flutter pub get
+npm ci
+flutter build web --release --dart-define-from-file=firebase.emulators.json --output build/emulator-web
+npm run demo
+```
+
+Abrir [CampusFix local](http://127.0.0.1:5000). El comando inicia los emuladores de Authentication, Firestore, Storage y Hosting, y carga las cuentas y los datos de demostración. `Ctrl+C` detiene el entorno.
+
+Las cuentas locales, los puertos y el modo de desarrollo están en [Entorno local](docs/ENTORNO_LOCAL.md). Las carpetas `build/` y `node_modules/` se generan localmente y no forman parte del repositorio. Las versiones de dependencias se registran en `pubspec.lock` y `package-lock.json`.
+
+## Compilar y publicar
+
+`firebase.config.json` contiene las opciones públicas de la aplicación web de Firebase. Las credenciales administrativas se gestionan fuera del código.
 
 ```powershell
 flutter build web --release --dart-define-from-file=firebase.config.json
 npx firebase deploy --project campusfix-ae32e --only firestore:rules,firestore:indexes,hosting
 ```
 
-`firebase.json` publica `build/web`. Las reglas e índices de Firestore deben desplegarse junto con el cliente. Las reglas de Storage quedan preparadas para desplegarlas cuando se habilite ese servicio; las fotos de producción permanecen pendientes. Consulte [Firebase](docs/FIREBASE.md) para el procedimiento completo.
+`firebase.json` publica el contenido de `build/web`. Los cambios subidos a GitHub se publican en el sitio después de compilar y desplegar en Firebase.
 
-## Estado de entrega
+## Documentación
 
-La versión **2026.10.21.3** incorpora la identidad UCR: análisis Dart sin problemas, **25/25** pruebas Flutter y **7/7** pruebas de actualización. Ambas compilaciones y el despliegue terminaron correctamente. El acceso, el tablero y la sesión existente se comprobaron en el navegador; el tema oscuro conserva la legibilidad y los recursos gráficos se incluyen localmente. Resultados en [Pruebas](docs/PRUEBAS.md).
-
-La versión anterior **2026.10.21.2**, verificada el 21 de octubre de 2026, pasó el análisis Dart, **25/25** pruebas Flutter y **7/7** pruebas de actualización; ambas compilaciones y Hosting terminaron correctamente. La entrega inicial pasó **20/20** pruebas de reglas y **8/8** de integración Firebase. Esos resultados se conservan como evidencia histórica, junto con las comprobaciones de acceso y sesión de producción. Las fotografías de producción permanecen pendientes.
+| Documento | Contenido |
+| --- | --- |
+| [Inicio rápido](EMPEZAR_AQUI.md) | Acceso y ejecución local. |
+| [Requisitos](docs/REQUISITOS.md) | Historias HU-01 a HU-20 y alcance funcional. |
+| [Arquitectura](docs/ARQUITECTURA.md) | Capas, modelo de datos, estados y permisos. |
+| [Manual de usuario](docs/MANUAL_USUARIO.md) | Operación del reportante, técnico y administrador. |
+| [Firebase y publicación](docs/FIREBASE.md) | Configuración de servicios, reglas y despliegue. |
+| [Entorno local](docs/ENTORNO_LOCAL.md) | Emuladores, cuentas de demostración y desarrollo. |
+| [Paquetes](docs/PAQUETES.md) | Dependencias y su función en la aplicación. |
+| [Identidad UCR](docs/IDENTIDAD_UCR.md) | Colores, recursos gráficos y fuentes institucionales. |

@@ -2,7 +2,7 @@
 
 CampusFix es un proyecto académico para la Universidad de Costa Rica, Sede del Sur. La interfaz utiliza los colores de la UCR y archivos gráficos institucionales originales. La incorporación de estos recursos no constituye una certificación ni un aval institucional del software.
 
-## Fuentes oficiales consultadas
+## Referencias oficiales
 
 - [Línea gráfica de la Universidad de Costa Rica](https://www.ucr.ac.cr/sitios/linea-grafica.html).
 - [Identidad visual de la Oficina de Comunicación Institucional](https://oci.ucr.ac.cr/identidad-visual.html).
@@ -40,7 +40,7 @@ Para la firma de una línea, se recomienda un área de 252 × 50 px o mayor, con
 
 Los recursos se empaquetan como assets locales de Flutter (`Image.asset`) para evitar dependencias de red, fuentes externas y paquetes adicionales de renderizado de imágenes.
 
-## Verificación de integridad
+## Integridad de los archivos
 
 SHA-256 de los archivos originales extraídos:
 

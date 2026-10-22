@@ -2,7 +2,7 @@
 
 CampusFix centraliza el reporte, atención y cierre de incidencias del campus. Abra [CampusFix](https://campusfix-ae32e.web.app). Puede trabajar desde un navegador de escritorio o una tablet con conexión a Internet.
 
-**Alcance actual:** el acceso por correo/contraseña está habilitado y existe una cuenta administradora inicial con cinco categorías. Sus datos de acceso se entregan por separado. Las fotografías funcionan en la demostración local con los emuladores de Firebase. En producción quedan pendientes hasta habilitar Cloud Storage; el sitio muestra un aviso y no ofrece el botón **Adjuntar**. Las cuentas locales de prueba no pertenecen al sitio público.
+**Alcance actual:** el acceso por correo/contraseña está habilitado y el catálogo inicial contiene cinco categorías. El administrador gestiona las cuentas y sus roles. Las fotografías funcionan en el entorno local con los emuladores de Firebase. En producción quedan pendientes hasta habilitar Cloud Storage; el sitio muestra un aviso y no ofrece el botón **Adjuntar**. Las cuentas del entorno local no pertenecen al sitio público.
 
 ## Acceso y perfil
 
@@ -51,7 +51,7 @@ Si una incidencia no aparece en su listado, confirme con el administrador que es
 
 ## Demostración gratuita con fotografías
 
-En la carpeta del proyecto, instale las dependencias con `npm ci` y ejecute `npm run demo`. Necesita Node.js 24.12 o superior y Java/JDK 21 o superior. Abra [CampusFix local](http://127.0.0.1:5000): la semilla automática prepara las cuentas y datos. Las tres cuentas y su contraseña de uso exclusivamente local están en [Pruebas](PRUEBAS.md). Cierre con `Ctrl+C`. Esta demostración permite seguir el ciclo de los tres roles y probar Storage sin activar facturación del proyecto público.
+En la carpeta del proyecto, instale las dependencias con `npm ci` y ejecute `npm run demo`. Necesita Node.js 24.12 o superior y Java/JDK 21 o superior. Abra [CampusFix local](http://127.0.0.1:5000): la semilla prepara las cuentas y datos. Las tres cuentas y su contraseña de uso exclusivamente local están en [Entorno local](ENTORNO_LOCAL.md). Cierre con `Ctrl+C`. Esta demostración permite seguir el ciclo de los tres roles y utilizar Storage sin activar facturación del proyecto público.
 
 ## Qué significa cada estado
 
