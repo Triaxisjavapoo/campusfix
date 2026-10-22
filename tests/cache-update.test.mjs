@@ -68,8 +68,8 @@ test('loads the versioned entrypoint without registering a worker and preserves 
   const result = await runBootstrap();
   assert.equal(result.loads.length, 1);
   assert.equal(result.loads[0].length, 0);
-  assert.equal(result.context.document.documentElement.dataset.campusfixBuild, '2026.10.21.2');
-  assert.equal(result.context._flutter.buildConfig.builds[0].mainJsPath, `${origin}main.dart.js?v=2026.10.21.2`);
+  assert.equal(result.context.document.documentElement.dataset.campusfixBuild, '2026.10.21.3');
+  assert.equal(result.context._flutter.buildConfig.builds[0].mainJsPath, `${origin}main.dart.js?v=2026.10.21.3`);
   assert.equal(result.context._flutter.buildConfig.builds[1].mainWasmPath, 'main.dart.wasm');
   assert.equal(result.context._flutter.buildConfig.builds[1].jsSupportRuntimePath, 'main.dart.mjs');
   assert.equal(result.warnings.length, 0);
@@ -89,18 +89,18 @@ test('unregisters only the Flutter worker belonging to this app and navigates be
   assert.equal(ownRemoved, 1);
   assert.equal(otherRemoved, 0);
   assert.equal(result.loads.length, 0);
-  assert.equal(result.navigations[0], `${origin}?filter=mine&__campusfix_update=2026.10.21.2#reports`);
+  assert.equal(result.navigations[0], `${origin}?filter=mine&__campusfix_update=2026.10.21.3#reports`);
 });
 
 test('avoids a reload loop if a browser retains the old controller', async () => {
-  const result = await runBootstrap({ url: `${origin}?__campusfix_update=2026.10.21.2`, controller: worker });
+  const result = await runBootstrap({ url: `${origin}?__campusfix_update=2026.10.21.3`, controller: worker });
   assert.equal(result.navigations.length, 0);
   assert.equal(result.loads.length, 0);
   assert.match(result.message.textContent, /Cierra esta pestaña/);
 });
 
 test('removes the migration query after regaining an uncontrolled document, preserving user URL state', async () => {
-  const result = await runBootstrap({ url: `${origin}?filter=mine&__campusfix_update=2026.10.21.2#reports` });
+  const result = await runBootstrap({ url: `${origin}?filter=mine&__campusfix_update=2026.10.21.3#reports` });
   assert.equal(result.loads.length, 1);
   assert.equal(result.historyChanges[0][2], `${origin}?filter=mine#reports`);
 });
@@ -139,8 +139,8 @@ test('does not delete unidentified Flutter caches from another application', asy
 
 test('web source and both hosting configurations agree on release and no-store entrypoints', async () => {
   const html = await fs.readFile(new URL('../web/index.html', import.meta.url), 'utf8');
-  assert.match(html, /flutter_bootstrap\.js\?v=2026\.10\.21\.2/);
-  assert.match(html, /name="campusfix-build" content="2026\.10\.21\.2"/);
+  assert.match(html, /flutter_bootstrap\.js\?v=2026\.10\.21\.3/);
+  assert.match(html, /name="campusfix-build" content="2026\.10\.21\.3"/);
   for (const filename of ['firebase.json', 'firebase.demo.json']) {
     const config = JSON.parse(await fs.readFile(new URL(`../${filename}`, import.meta.url), 'utf8'));
     for (const source of ['/', '/index.html', '**/*.js', '/version.json']) {

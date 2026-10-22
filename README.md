@@ -4,7 +4,9 @@ Aplicación Flutter Web para reportar, asignar y atender incidencias del campus.
 
 Utiliza Firebase Authentication para las cuentas, Cloud Firestore para los datos y el seguimiento en tiempo real, Cloud Storage para fotografías privadas y Firebase Hosting para publicar el cliente web. Incluye tres roles: reportante, técnico y administrador.
 
-**Sitio publicado:** [Abrir CampusFix actualizado](https://campusfix-ae32e.web.app/?v=2026.10.21.2). La versión visible es `v2026.10.21.2`. Authentication por correo/contraseña está habilitado; el proyecto `campusfix-ae32e` tiene Firestore `(default)` en `us-central1`, cinco categorías y una cuenta administradora inicial. Su acceso se entrega en un archivo separado, fuera del código y del paquete compartible.
+**Acceso a CampusFix:** [Abrir CampusFix 2026.10.21.3](https://campusfix-ae32e.web.app/?v=2026.10.21.3). La actualización visual UCR está publicada y comprobada en el navegador. Los resultados y su alcance están en [Pruebas](docs/PRUEBAS.md). Authentication por correo/contraseña está habilitado; el proyecto `campusfix-ae32e` tiene Firestore `(default)` en `us-central1`, cinco categorías y una cuenta administradora inicial. Su acceso se entrega en un archivo separado, fuera del código y del paquete compartible.
+
+**Identidad visual UCR:** encabezado con la firma oficial PNG a color sin modificar, azul y celeste UCR, acceso ilustrado, navegación lateral renovada y una ilustración vectorial original del campus. Los recursos se incluyen localmente y no requieren paquetes nuevos. Las fuentes, colores, archivos y criterios de uso se detallan en [Identidad UCR](docs/IDENTIDAD_UCR.md).
 
 **Fotografías:** se conserva Cloud Storage y se demuestra gratuitamente con los emuladores reales de Firebase. Por decisión del usuario, las fotografías de producción quedan pendientes para evitar activar facturación. El sitio muestra esa limitación y no ofrece el botón de adjuntar en producción. No se reemplaza Storage con imágenes guardadas en Firestore.
 
@@ -37,6 +39,7 @@ Para probar Firebase localmente, siga [la guía de emuladores y pruebas](docs/PR
 | --- | --- |
 | [Requisitos y trazabilidad](docs/REQUISITOS.md) | Historias HU-01 a HU-20, criterios y correspondencia con la implementación. |
 | [Arquitectura](docs/ARQUITECTURA.md) | Capas, modelo Firestore, estados, autorización y evidencia privada. |
+| [Identidad UCR](docs/IDENTIDAD_UCR.md) | Fuentes oficiales, paleta, firmas originales, integridad de archivos y aplicación visual. |
 | [Manual de usuario](docs/MANUAL_USUARIO.md) | Operación del reportante, técnico y administrador. |
 | [Firebase y publicación](docs/FIREBASE.md) | Authentication, Firestore, Storage, reglas, primer administrador y Hosting. |
 | [Paquetes](docs/PAQUETES.md) | Qué paquete se usa, para qué sirve y cómo interviene en el sistema. |
@@ -55,4 +58,6 @@ npx firebase deploy --project campusfix-ae32e --only firestore:rules,firestore:i
 
 ## Estado de entrega
 
-Verificado el 21 de octubre de 2026: análisis Dart sin problemas, **25/25** pruebas Flutter y **7/7** pruebas de actualización; compilaciones de producción y emuladores terminadas correctamente. La entrega inicial también pasó **20/20** pruebas de reglas y **8/8** de integración Firebase. Hosting se desplegó y devolvió HTTP 200 con las entradas sin caché persistente. Se comprobó la actualización en la misma sesión `test4`, conservando su acceso y sin el aviso de permisos. El acceso administrativo, el panel y las cinco categorías se comprobaron previamente en el navegador de producción. Los límites de esa evidencia y el procedimiento reproducible están en [Pruebas](docs/PRUEBAS.md). Las fotografías de producción permanecen pendientes.
+La versión **2026.10.21.3** incorpora la identidad UCR: análisis Dart sin problemas, **25/25** pruebas Flutter y **7/7** pruebas de actualización. Ambas compilaciones y el despliegue terminaron correctamente. El acceso, el tablero y la sesión existente se comprobaron en el navegador; el tema oscuro conserva la legibilidad y los recursos gráficos se incluyen localmente. Resultados en [Pruebas](docs/PRUEBAS.md).
+
+La versión anterior **2026.10.21.2**, verificada el 21 de octubre de 2026, pasó el análisis Dart, **25/25** pruebas Flutter y **7/7** pruebas de actualización; ambas compilaciones y Hosting terminaron correctamente. La entrega inicial pasó **20/20** pruebas de reglas y **8/8** de integración Firebase. Esos resultados se conservan como evidencia histórica, junto con las comprobaciones de acceso y sesión de producción. Las fotografías de producción permanecen pendientes.

@@ -8,70 +8,14 @@ import '../domain/incident_policy.dart';
 import '../domain/dashboard_metrics.dart';
 import '../state/app_state.dart';
 
-const teal = Color(0xFF087F6D);
-const navy = Color(0xFF102E2A);
+import 'ucr_branding.dart';
+export 'ucr_branding.dart' show campusTheme;
+
 const emulatorMode = bool.fromEnvironment('USE_EMULATORS');
 const storageReady = bool.fromEnvironment(
   'STORAGE_ENABLED',
   defaultValue: false,
 );
-
-ThemeData campusTheme(Brightness brightness) {
-  final dark = brightness == Brightness.dark;
-  final scheme = ColorScheme.fromSeed(seedColor: teal, brightness: brightness);
-  return ThemeData(
-    useMaterial3: true,
-    colorScheme: scheme,
-    scaffoldBackgroundColor: dark
-        ? const Color(0xFF12201F)
-        : const Color(0xFFF4F7F5),
-    fontFamily: 'Arial',
-    appBarTheme: AppBarTheme(
-      backgroundColor: dark ? const Color(0xFF12201F) : const Color(0xFFF4F7F5),
-      surfaceTintColor: Colors.transparent,
-    ),
-    cardTheme: CardThemeData(
-      elevation: 0,
-      color: dark ? const Color(0xFF1D302D) : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: .5)),
-      ),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: dark ? const Color(0xFF233B36) : const Color(0xFFF8FAF9),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: scheme.outlineVariant),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(
-          color: scheme.outlineVariant.withValues(alpha: .65),
-        ),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-    ),
-    filledButtonTheme: FilledButtonThemeData(
-      style: FilledButton.styleFrom(
-        backgroundColor: teal,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    ),
-    dividerTheme: DividerThemeData(
-      color: scheme.outlineVariant.withValues(alpha: .5),
-    ),
-  );
-}
 
 String date(DateTime? value) => value == null
     ? 'Sincronizando…'
@@ -170,11 +114,9 @@ class _AccessScreenState extends State<AccessScreen> {
                 const Brand(),
                 gap(55),
                 Text(
-                  register
-                      ? 'UN CAMPUS MEJOR, JUNTOS'
-                      : 'TU CAMPUS, EN BUENAS MANOS',
-                  style: const TextStyle(
-                    color: teal,
+                  register ? 'SOMOS COMUNIDAD UCR' : 'UCR · SEDE DEL SUR',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.8,
@@ -186,7 +128,7 @@ class _AccessScreenState extends State<AccessScreen> {
                 Text(
                   register
                       ? 'Reporta, consulta y sigue cada solicitud desde un solo lugar.'
-                      : 'Ingresa para dar seguimiento a lo que importa.',
+                      : 'Tu espacio para cuidar el campus y seguir cada solicitud.',
                   style: const TextStyle(fontSize: 15, height: 1.6),
                 ),
                 gap(32),
@@ -310,119 +252,7 @@ class _AccessScreenState extends State<AccessScreen> {
       body: Row(
         children: [
           Expanded(child: login),
-          if (wide)
-            Expanded(
-              child: Container(
-                color: navy,
-                child: Padding(
-                  padding: const EdgeInsets.all(60),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 9,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: .08),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: const Text(
-                          'CUIDAMOS NUESTRO CAMPUS',
-                          style: TextStyle(
-                            color: Color(0xFF9AE3C8),
-                            fontSize: 11,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ),
-                      gap(35),
-                      const Text(
-                        'Pequeños reportes.\nGrandes mejoras.',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 49,
-                          height: 1.1,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -2,
-                        ),
-                      ),
-                      gap(28),
-                      const Text(
-                        'Un espacio para transformar las incidencias\nen soluciones que se pueden seguir.',
-                        style: TextStyle(
-                          color: Color(0xFFBCD1C9),
-                          fontSize: 17,
-                          height: 1.7,
-                        ),
-                      ),
-                      gap(45),
-                      for (final item in [
-                        (
-                          Icons.add_task,
-                          'Reporta con claridad',
-                          'Ubicación, categoría y evidencia.',
-                        ),
-                        (
-                          Icons.route_outlined,
-                          'Sigue cada paso',
-                          'Responsables e historial en un solo lugar.',
-                        ),
-                        (
-                          Icons.verified_outlined,
-                          'Cierra con confianza',
-                          'Cada solución deja una huella.',
-                        ),
-                      ])
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 25),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(13),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: .08),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  item.$1,
-                                  color: const Color(0xFFA6E7CF),
-                                ),
-                              ),
-                              const SizedBox(width: 18),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.$2,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    gap(5),
-                                    Text(
-                                      item.$3,
-                                      style: const TextStyle(
-                                        color: Color(0xFFBCD1C9),
-                                        height: 1.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          if (wide) const Expanded(child: AccessCampusPanel()),
         ],
       ),
     );
@@ -467,14 +297,10 @@ class Brand extends StatelessWidget {
         width: 41,
         height: 41,
         decoration: BoxDecoration(
-          color: light ? const Color(0xFF99DABD) : teal,
+          color: light ? const Color(0xFF00C0F3) : ucrBlue,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          Icons.home_repair_service_outlined,
-          color: light ? navy : Colors.white,
-          size: 23,
-        ),
+        child: CampusMark(color: light ? ucrNavy : Colors.white),
       ),
       const SizedBox(width: 12),
       Text(
@@ -515,135 +341,150 @@ class _WorkspaceState extends State<Workspace> {
     final wide = MediaQuery.sizeOf(context).width >= 1100;
     final menu = Container(
       width: 244,
-      color: navy,
+      color: ucrNavy,
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Brand(light: true),
-              gap(10),
-              const Padding(
-                padding: EdgeInsets.only(left: 53),
-                child: Text(
-                  'SEDE DEL SUR',
-                  style: TextStyle(
-                    color: Color(0xFF9EBDB2),
-                    fontSize: 9,
-                    letterSpacing: 1.9,
+        child: LayoutBuilder(
+          builder: (context, bounds) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: bounds.maxHeight),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 28,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Brand(light: true),
+                      gap(10),
+                      const Padding(
+                        padding: EdgeInsets.only(left: 53),
+                        child: Text(
+                          'COMUNIDAD UCR',
+                          style: TextStyle(
+                            color: Color(0xFF99C8E9),
+                            fontSize: 9,
+                            letterSpacing: 1.9,
+                          ),
+                        ),
+                      ),
+                      gap(45),
+                      const Text(
+                        'ESPACIO DE TRABAJO',
+                        style: TextStyle(
+                          color: Color(0xFF8AB5D3),
+                          fontSize: 9,
+                          letterSpacing: 1.4,
+                        ),
+                      ),
+                      gap(18),
+                      nav(0, Icons.space_dashboard_outlined, 'Vista general'),
+                      nav(
+                        1,
+                        Icons.inbox_outlined,
+                        profile.role == UserRole.reporter
+                            ? 'Mis incidencias'
+                            : profile.role == UserRole.technician
+                            ? 'Mi trabajo'
+                            : 'Incidencias',
+                      ),
+                      if (profile.role == UserRole.admin) ...[
+                        nav(2, Icons.bar_chart_outlined, 'Indicadores'),
+                        gap(25),
+                        const Text(
+                          'ADMINISTRACIÓN',
+                          style: TextStyle(
+                            color: Color(0xFF8AB5D3),
+                            fontSize: 9,
+                            letterSpacing: 1.4,
+                          ),
+                        ),
+                        gap(16),
+                        nav(3, Icons.category_outlined, 'Categorías'),
+                        nav(4, Icons.people_outline, 'Usuarios y roles'),
+                      ],
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.all(17),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10466F),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(width: 28, height: 3, color: ucrYellow),
+                            gap(10),
+                            const Text(
+                              'Nuestra UCR se cuida\nen comunidad.',
+                              style: TextStyle(
+                                color: Colors.white,
+                                height: 1.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            gap(10),
+                            Text(
+                              profile.role.label,
+                              style: const TextStyle(
+                                color: Color(0xFFB2D9F5),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      gap(24),
+                      InkWell(
+                        onTap: () => navigate(5),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: const Color(0xFFCFEFFD),
+                              foregroundColor: ucrNavy,
+                              child: Text(
+                                profile.name.isEmpty
+                                    ? 'U'
+                                    : profile.name[0].toUpperCase(),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    profile.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  gap(3),
+                                  const Text(
+                                    'Mi perfil',
+                                    style: TextStyle(
+                                      color: Color(0xFFB4D6EF),
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(
+                              Icons.chevron_right,
+                              color: Color(0xFFB4D6EF),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              gap(45),
-              const Text(
-                'ESPACIO DE TRABAJO',
-                style: TextStyle(
-                  color: Color(0xFF86A99D),
-                  fontSize: 9,
-                  letterSpacing: 1.4,
-                ),
-              ),
-              gap(18),
-              nav(0, Icons.space_dashboard_outlined, 'Vista general'),
-              nav(
-                1,
-                Icons.inbox_outlined,
-                profile.role == UserRole.reporter
-                    ? 'Mis incidencias'
-                    : profile.role == UserRole.technician
-                    ? 'Mi trabajo'
-                    : 'Incidencias',
-              ),
-              if (profile.role == UserRole.admin) ...[
-                nav(2, Icons.bar_chart_outlined, 'Indicadores'),
-                gap(25),
-                const Text(
-                  'ADMINISTRACIÓN',
-                  style: TextStyle(
-                    color: Color(0xFF86A99D),
-                    fontSize: 9,
-                    letterSpacing: 1.4,
-                  ),
-                ),
-                gap(16),
-                nav(3, Icons.category_outlined, 'Categorías'),
-                nav(4, Icons.people_outline, 'Usuarios y roles'),
-              ],
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.all(17),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1D4138),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.eco_outlined, color: Color(0xFFB9E8C7)),
-                    gap(10),
-                    const Text(
-                      'El campus lo cuidamos\nentre todos.',
-                      style: TextStyle(
-                        color: Colors.white,
-                        height: 1.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    gap(10),
-                    Text(
-                      profile.role.label,
-                      style: const TextStyle(
-                        color: Color(0xFFB9D4C9),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              gap(24),
-              InkWell(
-                onTap: () => navigate(5),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: const Color(0xFFCCE5D8),
-                      foregroundColor: navy,
-                      child: Text(
-                        profile.name.isEmpty
-                            ? 'U'
-                            : profile.name[0].toUpperCase(),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            profile.name,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          gap(3),
-                          const Text(
-                            'Mi perfil',
-                            style: TextStyle(
-                              color: Color(0xFFADCBBE),
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.chevron_right, color: Color(0xFFADCBBE)),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -686,8 +527,17 @@ class _WorkspaceState extends State<Workspace> {
       appBar: wide
           ? null
           : AppBar(
-              title: const Brand(),
+              title: const FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Brand(),
+              ),
               actions: [
+                IconButton(
+                  tooltip: 'Cambiar tema',
+                  onPressed: context.read<ThemeState>().toggle,
+                  icon: const Icon(Icons.contrast),
+                ),
                 IconButton(
                   tooltip: 'Cerrar sesión',
                   onPressed: auth.logout,
@@ -733,7 +583,11 @@ class _WorkspaceState extends State<Workspace> {
                           ][page],
                         ),
                         const Spacer(),
-                        const Icon(Icons.circle, color: teal, size: 7),
+                        Icon(
+                          Icons.circle,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 7,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           emulatorMode
@@ -790,19 +644,19 @@ class _WorkspaceState extends State<Workspace> {
       builder: (ctx) => ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14),
         selected: page == index,
-        selectedTileColor: const Color(0xFF245347),
+        selectedTileColor: const Color(0xFF005DA4),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11)),
         leading: Icon(
           icon,
           color: page == index
-              ? const Color(0xFFB5E8CD)
-              : const Color(0xFF9EBEB0),
+              ? const Color(0xFF70DEFF)
+              : const Color(0xFF9BC4E3),
           size: 21,
         ),
         title: Text(
           label,
           style: TextStyle(
-            color: page == index ? Colors.white : const Color(0xFFBCD1C7),
+            color: page == index ? Colors.white : const Color(0xFFC1DBEE),
             fontSize: 13,
             fontWeight: page == index ? FontWeight.w600 : FontWeight.normal,
           ),
@@ -871,7 +725,7 @@ class Overview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeading(
-          'Un mejor campus empieza aquí.',
+          'Un campus mejor, entre todos.',
           'Hola, ${profile.name.split(' ').first}. Este es el estado de tus servicios.',
           action: profile.role == UserRole.technician
               ? null
@@ -882,61 +736,7 @@ class Overview extends StatelessWidget {
                 ),
         ),
         gap(28),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: navy,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'CADA REPORTE CUENTA',
-                      style: TextStyle(
-                        color: Color(0xFFB8E1C8),
-                        fontSize: 10,
-                        letterSpacing: 1.7,
-                      ),
-                    ),
-                    gap(13),
-                    const Text(
-                      'De una incidencia a una solución.',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 23,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -.5,
-                      ),
-                    ),
-                    gap(9),
-                    const Text(
-                      'Consulta avances, conoce al responsable y sigue cada paso.',
-                      style: TextStyle(
-                        color: Color(0xFFB4CFC2),
-                        fontSize: 13,
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (MediaQuery.sizeOf(context).width > 700)
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 25),
-                  child: Icon(
-                    Icons.handyman_outlined,
-                    color: Color(0xFF9ECDB3),
-                    size: 68,
-                  ),
-                ),
-            ],
-          ),
-        ),
+        const CampusHero(),
         gap(24),
         MetricsGrid(metrics: metrics),
         gap(28),
@@ -974,9 +774,12 @@ class Overview extends StatelessWidget {
         else
           IncidentTable(items: latest, open: open),
         gap(24),
-        const Text(
-          'CampusFix · Universidad de Costa Rica, Sede del Sur · v1.0.2',
-          style: TextStyle(fontSize: 11, color: Color(0xFF75867D)),
+        Text(
+          'CampusFix · Proyecto académico · UCR, Sede del Sur · v1.0.3',
+          style: TextStyle(
+            fontSize: 11,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -989,31 +792,37 @@ class MetricsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
+      final dark = Theme.of(context).brightness == Brightness.dark;
       final data = [
         (
           Icons.layers_outlined,
           'Total de reportes',
           metrics.total,
-          const Color(0xFF597E76),
+          Theme.of(context).colorScheme.primary,
         ),
         (
           Icons.pending_actions_outlined,
           'Abiertas',
           metrics.open,
-          const Color(0xFFC88B29),
+          dark ? ucrYellow : const Color(0xFFC88B29),
         ),
         (
           Icons.engineering_outlined,
           'En atención',
           metrics.byStatus[IncidentStatus.inProgress] ?? 0,
-          const Color(0xFF4C85A8),
+          dark ? const Color(0xFF78D9F5) : const Color(0xFF0085B5),
         ),
-        (Icons.task_alt_outlined, 'Resueltas', metrics.resolved, teal),
+        (
+          Icons.task_alt_outlined,
+          'Resueltas',
+          metrics.resolved,
+          Theme.of(context).colorScheme.primary,
+        ),
         (
           Icons.inventory_2_outlined,
           'Cerradas',
           metrics.closed,
-          const Color(0xFF8879A8),
+          dark ? const Color(0xFFC9B8EF) : const Color(0xFF8879A8),
         ),
       ];
       final columns = box.maxWidth > 1050
@@ -1098,9 +907,12 @@ class CategoryChart extends StatelessWidget {
         children: [
           title('Incidencias por categoría', 18),
           gap(6),
-          const Text(
+          Text(
             'Dónde concentramos los esfuerzos',
-            style: TextStyle(fontSize: 12, color: Color(0xFF7C8980)),
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           gap(24),
           if (rows.isEmpty)
@@ -1137,8 +949,10 @@ class CategoryChart extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: row.value / maximum,
                       minHeight: 9,
-                      color: teal,
-                      backgroundColor: teal.withValues(alpha: .08),
+                      color: Theme.of(context).colorScheme.primary,
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: .08),
                     ),
                   ),
                 ],
@@ -1160,9 +974,12 @@ class StatusSummary extends StatelessWidget {
       children: [
         title('Pulso operativo', 18),
         gap(6),
-        const Text(
+        Text(
           'El trabajo, paso a paso',
-          style: TextStyle(fontSize: 12, color: Color(0xFF7C8980)),
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         gap(20),
         for (final status in [
@@ -1182,7 +999,10 @@ class StatusSummary extends StatelessWidget {
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: statusColor(status),
+                    color: statusColor(
+                      status,
+                      brightness: Theme.of(context).brightness,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1402,14 +1222,29 @@ class IncidentList extends StatelessWidget {
   }
 }
 
-Color statusColor(IncidentStatus status) => switch (status) {
-  IncidentStatus.inProgress => const Color(0xFF4F82B2),
-  IncidentStatus.resolved || IncidentStatus.closed => teal,
-  IncidentStatus.rejected ||
-  IncidentStatus.cancelled => const Color(0xFFB15A5A),
-  IncidentStatus.reopened => const Color(0xFF8B6CA7),
-  _ => const Color(0xFFB9862F),
-};
+Color statusColor(
+  IncidentStatus status, {
+  Brightness brightness = Brightness.light,
+}) {
+  if (brightness == Brightness.dark) {
+    return switch (status) {
+      IncidentStatus.inProgress => const Color(0xFF85C6F4),
+      IncidentStatus.resolved || IncidentStatus.closed => ucrSky,
+      IncidentStatus.rejected ||
+      IncidentStatus.cancelled => const Color(0xFFFFB4AB),
+      IncidentStatus.reopened => const Color(0xFFD0BCFF),
+      _ => ucrYellow,
+    };
+  }
+  return switch (status) {
+    IncidentStatus.inProgress => const Color(0xFF4F82B2),
+    IncidentStatus.resolved || IncidentStatus.closed => ucrBlue,
+    IncidentStatus.rejected ||
+    IncidentStatus.cancelled => const Color(0xFFB15A5A),
+    IncidentStatus.reopened => const Color(0xFF8B6CA7),
+    _ => const Color(0xFFB9862F),
+  };
+}
 
 class StatusBadge extends StatelessWidget {
   const StatusBadge(this.status, {super.key});
@@ -1418,13 +1253,16 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
     decoration: BoxDecoration(
-      color: statusColor(status).withValues(alpha: .11),
+      color: statusColor(
+        status,
+        brightness: Theme.of(context).brightness,
+      ).withValues(alpha: .11),
       borderRadius: BorderRadius.circular(7),
     ),
     child: Text(
       status.label,
       style: TextStyle(
-        color: statusColor(status),
+        color: statusColor(status, brightness: Theme.of(context).brightness),
         fontSize: 11,
         fontWeight: FontWeight.w600,
       ),
@@ -1444,7 +1282,7 @@ class PriorityBadge extends StatelessWidget {
         size: 15,
         color: priority.index >= 2
             ? const Color(0xFFC1734A)
-            : const Color(0xFF7B9286),
+            : const Color(0xFF617E92),
       ),
       const SizedBox(width: 4),
       Text(priority.label, style: const TextStyle(fontSize: 12)),
@@ -1477,8 +1315,10 @@ class IncidentTable extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   x.number,
-                                  style: const TextStyle(
-                                    color: teal,
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -1560,8 +1400,8 @@ class IncidentTable extends StatelessWidget {
                             children: [
                               Text(
                                 x.number,
-                                style: const TextStyle(
-                                  color: teal,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
                                   fontSize: 10,
                                 ),
                               ),
@@ -1580,9 +1420,11 @@ class IncidentTable extends StatelessWidget {
                                 x.location,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
-                                  color: Color(0xFF7F8E84),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -1630,7 +1472,7 @@ class EmptyState extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 37),
         child: Column(
           children: [
-            Icon(icon, color: teal, size: 38),
+            Icon(icon, color: Theme.of(context).colorScheme.primary, size: 38),
             gap(16),
             title(heading, 19),
             gap(10),
@@ -1655,12 +1497,12 @@ class Notice extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: teal.withValues(alpha: .09),
+      color: Theme.of(context).colorScheme.primary.withValues(alpha: .09),
       borderRadius: BorderRadius.circular(9),
     ),
     child: Row(
       children: [
-        Icon(icon, color: teal, size: 19),
+        Icon(icon, color: Theme.of(context).colorScheme.primary, size: 19),
         const SizedBox(width: 10),
         Expanded(
           child: Text(text, style: const TextStyle(fontSize: 12, height: 1.5)),
@@ -1930,8 +1772,8 @@ class _IncidentDetailState extends State<IncidentDetail> {
         gap(14),
         Text(
           item.number,
-          style: const TextStyle(
-            color: teal,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.w600,
             fontSize: 12,
           ),
@@ -2050,12 +1892,12 @@ class _IncidentDetailState extends State<IncidentDetail> {
                       style: TextStyle(fontSize: 13, height: 1.7),
                     ),
                   gap(10),
-                  const Text(
+                  Text(
                     'Cada cambio registra quién lo realizó, cuándo y por qué.',
                     style: TextStyle(
                       fontSize: 11,
                       height: 1.6,
-                      color: Color(0xFF7E8D82),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -2184,11 +2026,11 @@ class _IncidentDetailState extends State<IncidentDetail> {
                               children: [
                                 const CircleAvatar(
                                   radius: 17,
-                                  backgroundColor: Color(0xFFE1F0E8),
+                                  backgroundColor: Color(0xFFDFF3FC),
                                   child: Icon(
                                     Icons.person_outline,
                                     size: 18,
-                                    color: teal,
+                                    color: ucrBlue,
                                   ),
                                 ),
                                 const SizedBox(width: 14),
@@ -2260,12 +2102,16 @@ class _IncidentDetailState extends State<IncidentDetail> {
                                 Container(
                                   padding: const EdgeInsets.all(9),
                                   decoration: BoxDecoration(
-                                    color: teal.withValues(alpha: .1),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary.withValues(alpha: .1),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.history,
-                                    color: teal,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     size: 17,
                                   ),
                                 ),
@@ -2297,8 +2143,10 @@ class _IncidentDetailState extends State<IncidentDetail> {
                                       gap(7),
                                       Text(
                                         '${x.fromStatus?.label ?? 'Inicio'} → ${x.toStatus.label}',
-                                        style: const TextStyle(
-                                          color: teal,
+                                        style: TextStyle(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                           fontSize: 11,
                                         ),
                                       ),
@@ -2325,7 +2173,7 @@ class _IncidentDetailState extends State<IncidentDetail> {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: teal),
+        Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -2333,7 +2181,10 @@ class _IncidentDetailState extends State<IncidentDetail> {
             children: [
               Text(
                 label,
-                style: const TextStyle(fontSize: 10, color: Color(0xFF7F8F85)),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               gap(4),
               Text(value, style: const TextStyle(fontSize: 13, height: 1.5)),
@@ -2727,7 +2578,10 @@ class _EvidenceTileState extends State<EvidenceTile> {
         gap(5),
         Text(
           widget.evidence.uploaderName,
-          style: const TextStyle(fontSize: 10, color: Color(0xFF7F8F85)),
+          style: TextStyle(
+            fontSize: 10,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     ),
@@ -2835,7 +2689,10 @@ class CategoryAdmin extends StatelessWidget {
             child: Panel(
               child: Row(
                 children: [
-                  const Icon(Icons.category_outlined, color: teal),
+                  Icon(
+                    Icons.category_outlined,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -2855,7 +2712,11 @@ class CategoryAdmin extends StatelessWidget {
                           x.active ? 'Activa' : 'Desactivada',
                           style: TextStyle(
                             fontSize: 11,
-                            color: x.active ? teal : Colors.grey,
+                            color: x.active
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -2999,7 +2860,9 @@ class UserAdmin extends StatelessWidget {
                         user.active ? 'Cuenta activa' : 'Acceso desactivado',
                         style: TextStyle(
                           fontSize: 11,
-                          color: user.active ? teal : Colors.grey,
+                          color: user.active
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -3142,8 +3005,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Text(
                     profile.role.label.toUpperCase(),
-                    style: const TextStyle(
-                      color: teal,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
                       fontSize: 11,
                       letterSpacing: 1.5,
                     ),

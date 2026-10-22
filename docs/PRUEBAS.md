@@ -2,7 +2,7 @@
 
 Este documento separa el procedimiento reproducible de los resultados efectivamente observados. La matriz de [Requisitos](REQUISITOS.md) detalla los criterios de aceptación. Nunca ejecute la semilla de demostración contra producción.
 
-El usuario decidió conservar Cloud Storage y demostrar las fotografías gratuitamente con los emuladores reales; Storage de producción permanece pendiente. No se usa Firestore como almacenamiento alternativo de imágenes. El proyecto real es `campusfix-ae32e`, con Firestore `(default)` en `us-central1` y acceso por correo/contraseña habilitado. La versión actual es **2026.10.21.2**, disponible en [CampusFix actualizado](https://campusfix-ae32e.web.app/?v=2026.10.21.2). Las pruebas locales y las comprobaciones de producción se distinguen abajo.
+El usuario decidió conservar Cloud Storage y demostrar las fotografías gratuitamente con los emuladores reales; Storage de producción permanece pendiente. No se usa Firestore como almacenamiento alternativo de imágenes. El proyecto real es `campusfix-ae32e`, con Firestore `(default)` en `us-central1` y acceso por correo/contraseña habilitado. La actualización visual preparada es **2026.10.21.3**, con [enlace de acceso versionado](https://campusfix-ae32e.web.app/?v=2026.10.21.3). Su comprobación final está pendiente; la última validación completa registrada corresponde a **2026.10.21.2**. Los resultados se distinguen por versión y entorno.
 
 ## Preparación
 
@@ -119,9 +119,9 @@ Para repetir las pruebas de reglas no deje otra instancia ocupando esos puertos;
 
 Los emuladores no demuestran por sí mismos que los servicios de producción estén habilitados ni que el despliegue sea accesible. El acceso a Hosting, Authentication y Firestore de producción se verificó por separado. No se activó Blaze ni se probó Storage de producción, conforme a la decisión del usuario.
 
-## Resultados de esta entrega
+## Resultados de la versión 2026.10.21.2
 
-Verificaciones registradas el **21 de octubre de 2026**. La versión actual es **2026.10.21.2**. Las filas indican qué se volvió a ejecutar para esta corrección y qué corresponde a la entrega anterior; no se atribuye una nueva ejecución a las suites de reglas o integración Firebase.
+Verificaciones históricas registradas el **21 de octubre de 2026** para **2026.10.21.2**. Las referencias a la versión actual dentro de esta tabla corresponden a esa publicación. Las filas indican qué se volvió a ejecutar para esa corrección y qué corresponde a la entrega anterior; no se atribuyen estos resultados a 2026.10.21.3 ni una nueva ejecución a las suites de reglas o integración Firebase.
 
 | Verificación | Resultado registrado |
 | --- | --- |
@@ -164,10 +164,27 @@ Las reglas de Firestore y Storage conservan sus restricciones por rol. Esta corr
 
 La inspección del cliente anterior mostró que las respuestas HEAD de `/`, `flutter_bootstrap.js` y `main.dart.js` permitían `max-age=3600`. El documento cargado tampoco tenía el marcador de versión nuevo. Por eso un navegador podía continuar ejecutando el cliente anterior aunque Hosting ya contuviera la primera corrección del acceso.
 
-La versión actual envía `no-cache, no-store, must-revalidate` para la entrada de la aplicación, los JavaScript y `version.json`. `index.html` carga el bootstrap con su versión, y el bootstrap solicita `main.dart.js` con la misma versión. El arranque no registra un nuevo service worker. Retira únicamente el worker Flutter que coincide con la ruta y el alcance de CampusFix y limpia recursos de caché después de identificar el documento de esta aplicación. Conserva Authentication, IndexedDB, localStorage y los recursos de otras aplicaciones.
+La versión 2026.10.21.2 incorporó `no-cache, no-store, must-revalidate` para la entrada de la aplicación, los JavaScript y `version.json`. `index.html` carga el bootstrap con su versión, y el bootstrap solicita `main.dart.js` con la misma versión. El arranque no registra un nuevo service worker. Retira únicamente el worker Flutter que coincide con la ruta y el alcance de CampusFix y limpia recursos de caché después de identificar el documento de esta aplicación. Conserva Authentication, IndexedDB, localStorage y los recursos de otras aplicaciones.
 
 Las siete pruebas Node de `tests/cache-update.test.mjs` pasaron. También pasaron las 25 pruebas Flutter y el análisis Dart sin problemas, se generaron ambas compilaciones con código de salida 0 y Hosting confirmó el despliegue. Las comprobaciones HEAD posteriores devolvieron 200 y los encabezados sin almacenamiento en caché. En producción se abrió la actualización dentro de la misma sesión de `test4`: desapareció el aviso anterior y se conservó el acceso. Las reglas de seguridad mantienen los permisos por rol.
 
-Para abrir esta corrección, use [el enlace versionado](https://campusfix-ae32e.web.app/?v=2026.10.21.2). Compruebe **v2026.10.21.2** en la esquina inferior derecha y **v1.0.2** en el pie de la aplicación Flutter. No se necesita borrar los datos del navegador ni cerrar la sesión. Si aparece el mensaje de actualización que pide cerrar la pestaña porque un worker anterior sigue controlándola, cierre esa pestaña y abra de nuevo el enlace versionado.
+La publicación comprobada en esa corrección utilizó el [enlace 2026.10.21.2](https://campusfix-ae32e.web.app/?v=2026.10.21.2), el sello **v2026.10.21.2** y el pie Flutter **v1.0.2**. Son marcadores de esa evidencia histórica. Para la siguiente actualización use el enlace y los marcadores de su versión. No se necesita borrar los datos del navegador ni cerrar la sesión. Si aparece el mensaje de actualización que pide cerrar la pestaña porque un worker anterior sigue controlándola, cierre esa pestaña y abra de nuevo el enlace versionado.
 
 En siguientes cambios, incremente conjuntamente la versión del meta, sello y script de `web/index.html` y la de `web/flutter_bootstrap.js`; ajuste la expectativa de versión de las pruebas, ejecute `npm run test:cache` y después compile. Las fuentes deben coincidir. Actualice también el enlace compartido para que no conserve el identificador fijo de una entrega anterior.
+
+## Actualización visual UCR: 2026.10.21.3
+
+La interfaz utiliza la paleta UCR, el encabezado con firma oficial PNG sin modificar, el acceso ilustrado, la navegación lateral y una ilustración vectorial original del campus. Los recursos se incluyen localmente, sin paquetes nuevos. Su procedencia e integridad están en [Identidad UCR](IDENTIDAD_UCR.md).
+
+Resultados de esta actualización visual. Las comprobaciones de 2026.10.21.2 anteriores permanecen como evidencia histórica.
+
+| Verificación de 2026.10.21.3 | Estado |
+| --- | --- |
+| Análisis Dart | `dart analyze lib test`: `No issues found` tras los cambios visuales UCR. |
+| Pruebas Flutter | **25/25** tras los cambios visuales UCR. |
+| `npm run test:cache` | **7/7** con los marcadores de versión 2026.10.21.3. |
+| Compilaciones de producción y emuladores | Ambas con código de salida 0, en `build/web` y `build/emulator-web`. |
+| Despliegue y encabezados de Hosting | Publicación CLI correcta en [CampusFix 2026.10.21.3](https://campusfix-ae32e.web.app/?v=2026.10.21.3). HEAD devolvió HTTP 200 y `no-store` para HTML, bootstrap, main, firma UCR y fuente MaterialIcons. |
+| Inspección visual UCR y acceso | Acceso y tablero de escritorio a 1280 × 720; tablero con navegación plegable a 858 × 884. Firma, botones, ilustraciones y temas claro/oscuro comprobados. La cuenta `test5` conservó su sesión sin aviso de permisos. Formulario de nueva incidencia abierto y cerrado sin guardar datos. Marcadores `v2026.10.21.3` y pie Flutter `v1.0.3` confirmados. |
+
+El menú puede desplazarse en ventanas bajas; la marca de la cabecera se reduce para caber en teléfonos estrechos. Estos ajustes se revisaron en código; no se afirma una captura de navegador a 320 px. Las métricas, estados y textos secundarios usan colores legibles según el tema. El icono de CampusFix se dibuja en código para mantener su presencia incluso cuando el navegador conserva una fuente de iconos anterior. Hosting también entrega los assets sin caché persistente para las siguientes actualizaciones. No se cambiaron reglas, cuentas ni datos de Firebase.

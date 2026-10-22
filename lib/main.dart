@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'data/firebase_repository.dart';
 import 'state/app_state.dart';
 import 'ui/app.dart';
+import 'ui/ucr_branding.dart';
 
 const useEmulators = bool.fromEnvironment('USE_EMULATORS');
 Future<void> main() async {
@@ -105,7 +106,7 @@ class CampusFixApp extends StatelessWidget {
   const CampusFixApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'CampusFix · Gestión del campus',
+    title: 'CampusFix · UCR, Sede del Sur',
     debugShowCheckedModeBanner: false,
     locale: const Locale('es', 'CR'),
     supportedLocales: const [Locale('es', 'CR')],
@@ -115,6 +116,6 @@ class CampusFixApp extends StatelessWidget {
     themeMode: context.watch<ThemeState>().isDark
         ? ThemeMode.dark
         : ThemeMode.light,
-    home: const AuthGate(),
+    home: const InstitutionalShell(child: AuthGate()),
   );
 }

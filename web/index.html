@@ -4,19 +4,38 @@
   <base href="$FLUTTER_BASE_HREF">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="CampusFix: reporta y da seguimiento a incidencias y solicitudes de servicio del campus.">
-  <meta name="theme-color" content="#087f6d">
-  <meta name="campusfix-build" content="2026.10.21.2">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="manifest" href="manifest.json">
-  <title>CampusFix · Gestión del campus</title>
-  <style>body{margin:0;background:#f4f7f5;font-family:Arial,sans-serif}.loading{height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#102e2a}.mark{border-radius:16px;background:#087f6d;color:white;padding:17px 21px;font-size:26px;font-weight:bold}.loading h1{font-size:24px;letter-spacing:-1px}.loading p{font-size:13px;color:#617a70}.progress{width:100px;height:3px;background:#cee3d8;overflow:hidden}.progress:after{content:'';display:block;height:3px;width:40px;background:#087f6d;animation:p 1s infinite}.build-version{position:fixed;bottom:2px;right:5px;z-index:2147483647;font:10px Arial,sans-serif;color:#617a70;background:#f4f7f5;pointer-events:none}@keyframes p{to{transform:translateX(110px)}}</style>
+  <meta name="description" content="CampusFix · UCR, Sede del Sur. Reporta incidencias, solicita servicios y da seguimiento al cuidado de nuestro campus.">
+  <meta name="theme-color" content="#005DA4">
+  <meta name="campusfix-build" content="2026.10.21.3">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=2026.10.21.3">
+  <link rel="manifest" href="manifest.json?v=2026.10.21.3">
+  <title>CampusFix · UCR, Sede del Sur</title>
+  <style>
+    body{margin:0;background:#F4F8FC;font-family:Arial,sans-serif;color:#12324D}
+    .loading{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;flex-direction:column;box-sizing:border-box;padding:32px 24px;background:radial-gradient(ellipse at 50% 0%,#E8F4FC 0,transparent 65%);text-align:center}
+    .mark{width:72px;height:72px;border-radius:20px;background:#005DA4;box-shadow:0 10px 30px #005DA414;display:grid;place-items:center;margin-bottom:24px}
+    .mark svg{width:52px;height:52px}
+    .institution{font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#005DA4}
+    .loading h1{font-size:34px;line-height:1.2;letter-spacing:-1.2px;margin:9px 0 10px;font-weight:700}
+    .loading p{font-size:14px;line-height:1.6;color:#597086;margin:0 0 26px}
+    .progress{width:120px;height:3px;background:#DCE9F3;overflow:hidden;border-radius:3px}
+    .progress:after{content:'';display:block;height:3px;width:45px;background:#00C0F3;border-radius:3px;animation:progress 1.4s ease-in-out infinite}
+    .build-version{position:fixed;bottom:2px;right:5px;z-index:2147483647;font:10px Arial,sans-serif;color:#597086;background:#F4F8FC;pointer-events:none}
+    @keyframes progress{0%{transform:translateX(-45px)}100%{transform:translateX(120px)}}
+    @media(prefers-reduced-motion:reduce){.progress:after{animation:none;transform:translateX(38px)}}
+  </style>
 </head>
 <body>
-  <div class="loading" id="loading"><div class="mark">c</div><h1>campusfix</h1><p>Preparando tu espacio de trabajo…</p><div class="progress"></div></div>
+  <div class="loading" id="loading" role="status" aria-live="polite">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M13 25 32 14l19 11M17 27h30M16 47h32M13 51h38M21 28v16m11-16v16m11-16v16" stroke="#FFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M28 21h8M48 14v7m-3.5-3.5h7" stroke="#00C0F3" stroke-width="3" stroke-linecap="round"/></svg></div>
+    <div class="institution">UCR · Sede del Sur</div>
+    <h1>CampusFix</h1>
+    <p>Preparando tu espacio de trabajo…</p>
+    <div class="progress" aria-hidden="true"></div>
+  </div>
   <noscript>CampusFix necesita JavaScript habilitado para acceder a Firebase.</noscript>
-  <span class="build-version" aria-label="Versión de CampusFix">v2026.10.21.2</span>
+  <span class="build-version" aria-label="Versión de CampusFix">v2026.10.21.3</span>
   <script>window.addEventListener('flutter-first-frame',()=>document.getElementById('loading')?.remove());</script>
-  <script src="flutter_bootstrap.js?v=2026.10.21.2" async></script>
+  <script src="flutter_bootstrap.js?v=2026.10.21.3" async></script>
 </body>
 </html>
